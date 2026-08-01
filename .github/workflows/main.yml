@@ -38,16 +38,20 @@ jobs:
           # Clean default Cordova files
           rm -rf ../cordova_build/www/*
           
-          # Copy your repository contents (index.html, images, styles) into www
+          # Copy your repository contents into www
           rsync -av --exclude='../cordova_build' ./ ../cordova_build/www/
           
           # Build Android APK
           cd ../cordova_build
           cordova platform add android
           cordova build android --debug
+          
+          # Move generated APK back to current workspace
+          cp platforms/android/app/build/outputs/apk/debug/app-debug.apk $GITHUB_WORKSPACE/Clownfish-debug.apk
 
       - name: Upload Clownfish APK
         uses: actions/upload-artifact@v4
         with:
           name: Clownfish-APK
-          path: ../cordova_build/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          path: Clownfish-debug.apk
+
