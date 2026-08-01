@@ -1,0 +1,3092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ClownFish - EZON Games</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      margin: 0;
+      padding: 0;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #02040a;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      max-width: 440px;
+      max-height: 820px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9), 0 0 30px rgba(168, 85, 247, 0.4);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #011627;
+      cursor: pointer;
+      touch-action: none;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    #tap-capture {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      background: transparent;
+      touch-action: none;
+    }
+
+    /* =========================================================
+       CINEMATIC INTRO SPLASH SCREEN (EZ / EZON INTRO)
+       ========================================================= */
+    #introSplashScreen {
+      background: radial-gradient(circle at center, #1e0538 0%, #0a0114 65%, #030007 100%);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .intro-vortex-bg {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: conic-gradient(from 0deg, transparent 0deg, rgba(168, 85, 247, 0.15) 90deg, rgba(216, 180, 254, 0.25) 180deg, transparent 360deg);
+      border-radius: 50%;
+      filter: blur(25px);
+      animation: vortexSpin 12s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes vortexSpin {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.1); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
+    .intro-ember {
+      position: absolute;
+      background: #e9d5ff;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #c084fc, 0 0 15px #9333ea;
+      animation: emberFloat 4s ease-in infinite;
+      opacity: 0;
+      pointer-events: none;
+    }
+    @keyframes emberFloat {
+      0% { transform: translateY(50px) scale(0.3); opacity: 0; }
+      30% { opacity: 0.9; }
+      80% { opacity: 0.6; }
+      100% { transform: translateY(-350px) scale(1.2); opacity: 0; }
+    }
+
+    .intro-aura-ring {
+      position: absolute;
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(192, 132, 252, 0.6) 0%, rgba(147, 51, 234, 0.35) 50%, transparent 75%);
+      filter: blur(18px);
+      animation: violetAuraPulse 2s infinite ease-in-out alternate;
+    }
+    @keyframes violetAuraPulse {
+      0% { transform: scale(0.85); opacity: 0.5; filter: blur(15px); }
+      100% { transform: scale(1.35); opacity: 1; filter: blur(28px); }
+    }
+
+    .intro-logo-box {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: logoReveal 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes logoReveal {
+      0% { transform: scale(0.3); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .intro-ez-text {
+      font-size: 88px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 4px;
+      font-style: italic;
+      line-height: 1;
+      text-shadow: 
+        0 0 10px #f3e8ff,
+        0 0 20px #e9d5ff,
+        0 0 40px #c084fc,
+        0 0 70px #9333ea,
+        0 0 100px #7e22ce;
+      animation: textGlowPulse 2s ease-in-out infinite alternate;
+    }
+    @keyframes textGlowPulse {
+      0% { text-shadow: 0 0 10px #f3e8ff, 0 0 20px #e9d5ff, 0 0 35px #c084fc, 0 0 60px #9333ea; }
+      100% { text-shadow: 0 0 15px #ffffff, 0 0 30px #f3e8ff, 0 0 55px #d8b4fe, 0 0 90px #a855f7, 0 0 120px #7e22ce; }
+    }
+
+    .intro-ezon-sub {
+      font-size: 14px;
+      font-weight: 900;
+      color: #e9d5ff;
+      letter-spacing: 9px;
+      margin-top: 10px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 12px #c084fc;
+    }
+
+    .intro-presents-tag {
+      font-size: 11px;
+      font-weight: 800;
+      color: #a855f7;
+      letter-spacing: 5px;
+      margin-top: 22px;
+      text-transform: uppercase;
+      opacity: 0.85;
+      animation: presentsFade 2s ease-in-out infinite alternate;
+    }
+    @keyframes presentsFade {
+      0% { opacity: 0.4; letter-spacing: 4px; }
+      100% { opacity: 1; letter-spacing: 6px; }
+    }
+
+    .skip-intro-btn {
+      position: absolute;
+      bottom: 24px;
+      right: 20px;
+      z-index: 105;
+      background: rgba(168, 85, 247, 0.3);
+      border: 1px solid rgba(216, 180, 254, 0.4);
+      color: #e9d5ff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 12px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .skip-intro-btn:active { background: rgba(168, 85, 247, 0.6); }
+
+    /* HUD Overlay */
+    .hud-overlay {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .hud-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .hearts-container {
+      display: flex;
+      gap: 6px;
+      background: rgba(2, 14, 28, 0.85);
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .heart-icon {
+      width: 26px;
+      height: 26px;
+      filter: drop-shadow(0 2px 4px rgba(255,23,68,0.5));
+      transition: transform 0.25s ease, opacity 0.2s ease;
+    }
+    .heart-icon.lost {
+      opacity: 0.2;
+      transform: scale(0.7);
+      filter: grayscale(100%);
+    }
+    .hud-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+    .hud-controls-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hud-btn-pause {
+      pointer-events: auto;
+      background: rgba(2, 14, 28, 0.88);
+      border: 1.5px solid rgba(0, 229, 255, 0.6);
+      color: #00e5ff;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: transform 0.1s ease;
+    }
+    .hud-btn-pause:active { transform: scale(0.9); }
+    
+    .key-badge {
+      background: rgba(2, 14, 28, 0.88);
+      border: 1.5px solid #ffd700;
+      padding: 4px 10px;
+      border-radius: 16px;
+      color: #ffd700;
+      font-weight: 800;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .score-badge {
+      background: rgba(2, 14, 28, 0.88);
+      border: 2px solid #ffd700;
+      padding: 6px 16px;
+      border-radius: 20px;
+      color: #fff;
+      font-weight: 800;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    .zone-badge {
+      background: rgba(0, 188, 212, 0.35);
+      border: 1px solid rgba(0, 229, 255, 0.5);
+      color: #00e5ff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .gravity-indicator {
+      position: absolute;
+      top: 98px;
+      right: 16px;
+      background: rgba(76, 175, 80, 0.85);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      pointer-events: none;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    }
+    .gravity-indicator.normal {
+      background: rgba(33, 150, 243, 0.85);
+    }
+
+    .powerup-timers-hud {
+      position: absolute;
+      top: 98px;
+      left: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .powerup-timer-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(2, 14, 28, 0.9);
+      border: 1px solid #00e5ff;
+      padding: 4px 10px;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    .banner-container {
+      position: absolute;
+      top: 28%;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 15;
+    }
+    .banner {
+      background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(10, 25, 47, 0.96) 20%, rgba(10, 25, 47, 0.96) 80%, rgba(0,0,0,0) 100%);
+      border-top: 2px solid #ffd700;
+      border-bottom: 2px solid #ffd700;
+      color: #ffffff;
+      padding: 12px 30px;
+      font-size: 17px;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: 0.8px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      animation: bannerPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes bannerPop {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .achievement-popup {
+      position: absolute;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: linear-gradient(135deg, #102a45 0%, #061322 100%);
+      border: 2px solid #ffd700;
+      border-radius: 16px;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 40;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .achievement-popup.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .achievement-icon { font-size: 28px; }
+    .achievement-title { font-size: 11px; color: #ffd700; font-weight: 800; text-transform: uppercase; }
+    .achievement-desc { font-size: 13px; color: #fff; font-weight: 700; }
+
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(3, 10, 22, 0.92);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 30;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-card {
+      width: 86%;
+      max-width: 330px;
+      background: #081726;
+      border: 1px solid rgba(255, 215, 0, 0.6);
+      border-radius: 20px;
+      padding: 24px 20px;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    }
+    .modal-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .modal-subtitle {
+      font-size: 13px;
+      color: #ffd700;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      font-size: 14px;
+      color: #a0aec0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .stat-row-val { color: #fff; font-weight: 700; }
+    .btn-action-cyan {
+      width: 100%;
+      padding: 12px;
+      background: #00b0ff;
+      border: none;
+      border-radius: 10px;
+      color: #000;
+      font-weight: 800;
+      font-size: 14px;
+      margin-top: 14px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .btn-action-resurrect {
+      background: linear-gradient(135deg, #ffd700 0%, #ff8f00 100%);
+      color: #000;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    }
+    .btn-link-menu {
+      background: none;
+      border: none;
+      color: #78909c;
+      font-size: 12px;
+      margin-top: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .screen-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #011627 0%, #000c18 100%);
+      z-index: 25;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      overflow-y: auto;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
+    }
+    .screen-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #mainMenuScreen {
+      background: linear-gradient(180deg, rgba(1, 15, 30, 0.7) 0%, rgba(0, 10, 20, 0.92) 100%),
+                  url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1000&q=80') center/cover no-repeat;
+    }
+
+    .main-menu-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .stat-badge-sm {
+      background: rgba(10, 30, 50, 0.92);
+      border: 1px solid rgba(0, 188, 212, 0.4);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #a0aec0;
+      text-align: center;
+    }
+    .stat-badge-sm span {
+      display: block;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .info-btn-icon {
+      background: rgba(0, 229, 255, 0.25);
+      border: 1.5px solid #00e5ff;
+      color: #00e5ff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-weight: 900;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,229,255,0.3);
+      transition: transform 0.15s ease;
+    }
+    .info-btn-icon:active { transform: scale(0.9); }
+
+    .main-menu-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+    }
+    .game-logo-fish {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 6px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+    }
+    .game-title-sub {
+      font-size: 12px;
+      color: #00e5ff;
+      letter-spacing: 3px;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+    .game-title-main {
+      font-size: 26px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: -5px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    }
+    .game-title-yellow {
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffd700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    }
+
+    .menu-btn {
+      width: 100%;
+      max-width: 340px;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: transform 0.1s ease;
+    }
+    .menu-btn:active { transform: scale(0.98); }
+    .btn-arcade {
+      background: #00b0ff;
+      border: none;
+      color: #000;
+      box-shadow: 0 4px 15px rgba(0, 176, 255, 0.4);
+    }
+    .btn-outline {
+      background: rgba(10, 30, 50, 0.85);
+      border: 1px solid rgba(255, 215, 0, 0.5);
+      color: #ffd700;
+    }
+    .btn-dev-mode {
+      background: rgba(2, 14, 28, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #b0bec5;
+      font-size: 11px;
+      padding: 8px 16px;
+      max-width: 180px;
+      border-radius: 8px;
+      margin-top: 6px;
+    }
+
+    .screen-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .btn-back {
+      background: none;
+      border: none;
+      color: #00e5ff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .header-title-box { text-align: center; }
+    .header-title { font-size: 16px; font-weight: 800; color: #fff; }
+    .header-subtitle { font-size: 10px; color: #78909c; }
+
+    /* Info Screen & Daily Missions UI */
+    .info-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+      width: 100%;
+    }
+    .info-tab {
+      flex: 1;
+      padding: 8px 0;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(0,229,255,0.2);
+      border-radius: 10px;
+      color: #78909c;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+    }
+    .info-tab.active {
+      background: #00e5ff;
+      color: #000;
+      border-color: #00e5ff;
+    }
+    .info-tab-content {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      overflow-y: auto;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 20px;
+    }
+    .info-tab-content.active { display: flex; }
+
+    .mission-card {
+      background: rgba(10, 25, 45, 0.9);
+      border: 1px solid rgba(0, 188, 212, 0.3);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .mission-card.completed {
+      border-color: #00e676;
+      background: rgba(0, 230, 118, 0.15);
+    }
+    .mission-left { flex: 1; }
+    .mission-diff-badge {
+      font-size: 9px;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+    .diff-easy { background: rgba(0, 230, 118, 0.2); color: #00e676; border: 1px solid #00e676; }
+    .diff-medium { background: rgba(0, 229, 255, 0.2); color: #00e5ff; border: 1px solid #00e5ff; }
+    .diff-hard { background: rgba(255, 145, 0, 0.2); color: #ff9100; border: 1px solid #ff9100; }
+    .diff-hardcore { background: rgba(255, 23, 68, 0.2); color: #ff1744; border: 1px solid #ff1744; }
+
+    .mission-desc { font-size: 12px; color: #fff; font-weight: 700; }
+    .mission-reward { font-size: 11px; color: #ffd700; font-weight: 800; margin-top: 2px; }
+    .mission-progress-num { font-size: 11px; color: #a0aec0; font-weight: 800; text-align: right; }
+
+    /* Fish Shop Grid UI */
+    .shop-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      flex: 1;
+      overflow-y: auto;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 20px;
+    }
+    .shop-card {
+      background: rgba(10, 25, 45, 0.9);
+      border: 1px solid rgba(0, 188, 212, 0.3);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+    .shop-card.equipped {
+      border-color: #00e676;
+      background: rgba(0, 230, 118, 0.15);
+    }
+    .shop-fish-preview {
+      width: 60px;
+      height: 45px;
+      margin: 4px 0;
+    }
+    .shop-fish-name {
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+    .shop-fish-power {
+      font-size: 10px;
+      color: #00e5ff;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 8px;
+      min-height: 24px;
+    }
+    .shop-fish-price {
+      font-size: 11px;
+      color: #ffd700;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .btn-shop-action {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+    .btn-shop-buy { background: #ffd700; color: #000; }
+    .btn-shop-equip { background: #00b0ff; color: #000; }
+    .btn-shop-equipped { background: rgba(255,255,255,0.15); color: #00e676; cursor: default; }
+
+    /* Story Mode UI */
+    .story-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      flex: 1;
+      overflow-y: auto;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
+    }
+    .chapter-card {
+      background: rgba(10, 25, 45, 0.85);
+      border: 1px solid rgba(0, 188, 212, 0.2);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+    .chapter-card.unlocked {
+      border-color: #00b0ff;
+      background: rgba(0, 176, 255, 0.15);
+    }
+    .chapter-icon { font-size: 24px; }
+    .chapter-info { flex: 1; }
+    .chapter-title { font-size: 14px; font-weight: 800; color: #fff; }
+    .chapter-desc { font-size: 11px; color: #78909c; margin: 3px 0; line-height: 1.3; }
+    .chapter-tag { font-size: 10px; color: #ffd700; font-weight: 700; }
+    .chapter-card.locked .chapter-title, .chapter-card.locked .chapter-desc { color: #455a64; }
+    .btn-play-chapter {
+      background: #00b0ff;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .lock-icon { font-size: 14px; color: #ffd700; }
+
+    .story-progress-bar-container {
+      margin-top: 15px;
+      text-align: center;
+    }
+    .story-progress-title { font-size: 10px; letter-spacing: 1px; color: #00e5ff; font-weight: 800; margin-bottom: 6px; }
+    .progress-track { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+    .progress-fill { width: 0%; height: 100%; background: #00e5ff; transition: width 0.3s ease; }
+    .progress-pct { font-size: 10px; color: #a0aec0; margin-top: 4px; font-weight: 700; }
+
+    /* Developer Mode Screens */
+    .dev-auth-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    .dev-wrench-icon { font-size: 32px; margin-bottom: 10px; }
+    .dev-auth-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .dev-auth-sub { font-size: 12px; color: #78909c; text-align: center; margin-bottom: 20px; }
+    .dev-input {
+      width: 100%;
+      max-width: 320px;
+      padding: 12px 16px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid #ffd700;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+      margin-bottom: 12px;
+    }
+    .dev-remember-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #a0aec0;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      cursor: pointer;
+    }
+
+    .dev-active-badge {
+      background: rgba(0, 229, 255, 0.15);
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      color: #00e5ff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .dev-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+      width: 100%;
+    }
+    .dev-tab {
+      flex: 1;
+      padding: 8px 0;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      color: #78909c;
+      font-size: 10px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+    }
+    .dev-tab.active {
+      background: #00e5ff;
+      color: #000;
+      border-color: #00e5ff;
+    }
+    .dev-tab-content {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+      overflow-y: auto;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 20px;
+    }
+    .dev-tab-content.active { display: flex; }
+
+    .dev-section-title {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #00e5ff;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 6px;
+      margin-bottom: 6px;
+    }
+
+    .dev-control-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 3px 0;
+    }
+    .dev-control-label { font-size: 12px; color: #cfd8dc; font-weight: 600; }
+    .dev-number-adjuster {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-adjust {
+      background: rgba(0, 229, 255, 0.2);
+      border: 1px solid rgba(0, 229, 255, 0.5);
+      color: #00e5ff;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dev-value-display {
+      font-size: 12px;
+      font-weight: bold;
+      color: #fff;
+      min-width: 40px;
+      text-align: center;
+    }
+
+    .dev-select {
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      outline: none;
+    }
+
+    .texture-preview-box {
+      width: 100%;
+      height: 110px;
+      border: 1px dashed rgba(0, 229, 255, 0.4);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.3);
+      margin: 6px 0;
+      overflow: hidden;
+    }
+    .texture-preview-box svg { max-height: 100%; max-width: 100%; object-fit: contain; }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 38px;
+      height: 20px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #37474f;
+      transition: .3s;
+      border-radius: 20px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: #00e5ff; }
+    input:checked + .slider:before { transform: translateX(18px); }
+
+    .dev-action-btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .btn-blue-action { background: #00334e; color: #00e5ff; border: 1px solid #00e5ff; }
+    .btn-purple-action { background: #1a0033; color: #d500f9; border: 1px solid #d500f9; }
+    .btn-red-action { background: #33000d; color: #ff1744; border: 1px solid #ff1744; }
+    .btn-stat-reset {
+      background: linear-gradient(135deg, #d50000 0%, #880000 100%);
+      color: #ffffff;
+      border: 1px solid #ff1744;
+      box-shadow: 0 4px 15px rgba(255,23,68,0.4);
+      font-weight: 900;
+    }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+  <div id="tap-capture"></div>
+
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- CINEMATIC STUDIO OPENING INTRO (EZ / EZON GAMES) -->
+  <div class="screen-overlay active" id="introSplashScreen">
+    <div class="intro-vortex-bg"></div>
+    <div class="intro-aura-ring"></div>
+
+    <div class="intro-ember" style="width:6px; height:6px; left:20%; bottom:10%; animation-delay:0s;"></div>
+    <div class="intro-ember" style="width:10px; height:10px; left:75%; bottom:15%; animation-delay:0.8s;"></div>
+    <div class="intro-ember" style="width:8px; height:8px; left:45%; bottom:5%; animation-delay:1.5s;"></div>
+    <div class="intro-ember" style="width:12px; height:12px; left:85%; bottom:20%; animation-delay:2.2s;"></div>
+    <div class="intro-ember" style="width:5px; height:5px; left:15%; bottom:25%; animation-delay:1.1s;"></div>
+
+    <div class="intro-logo-box">
+      <div class="intro-ez-text">EZ</div>
+      <div class="intro-ezon-sub">E Z O N &nbsp; G A M E S</div>
+      <div class="intro-presents-tag">P R E S E N T S</div>
+    </div>
+
+    <button class="skip-intro-btn" id="btnSkipIntro">SKIP ▶</button>
+  </div>
+
+  <!-- HUD Overlay -->
+  <div class="hud-overlay">
+    <div class="hud-left">
+      <div class="hearts-container" id="heartsHUD">
+        <svg class="heart-icon" viewBox="0 0 24 24"><path fill="#ff1744" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <svg class="heart-icon" viewBox="0 0 24 24"><path fill="#ff1744" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <svg class="heart-icon" viewBox="0 0 24 24"><path fill="#ff1744" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+      </div>
+    </div>
+
+    <div class="hud-right">
+      <div class="hud-controls-row">
+        <div class="key-badge">🔑 <span id="hudKeyCount">1</span></div>
+        <button class="hud-btn-pause" id="btnPauseGame">⏸️</button>
+      </div>
+      <div class="score-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ffc107"/><path d="M12 6v12M6 12h12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+        <span id="scoreText">0</span>
+      </div>
+      <div class="zone-badge" id="zoneBadge">Coral Reef</div>
+    </div>
+  </div>
+
+  <div class="powerup-timers-hud" id="powerupTimersHUD"></div>
+
+  <div class="gravity-indicator" id="gravityIndicator">Low Gravity Warmup</div>
+
+  <div class="banner-container" id="bannerContainer" style="display: none;">
+    <div class="banner" id="bannerText">Zone Unlocked!</div>
+  </div>
+
+  <!-- Achievement Popup -->
+  <div class="achievement-popup" id="achievementPopup">
+    <div class="achievement-icon">🏆</div>
+    <div>
+      <div class="achievement-title">Achievement Unlocked!</div>
+      <div class="achievement-desc" id="achievementText">Score Milestone! +50 Coins</div>
+    </div>
+  </div>
+
+  <!-- PAUSE MODAL -->
+  <div class="modal-overlay" id="pauseModal">
+    <div class="modal-card">
+      <div class="modal-title">GAME PAUSED</div>
+      <div class="modal-subtitle" id="pauseModeInfo">Arcade Mode</div>
+      <button class="btn-action-cyan" id="btnResumeGame">RESUME</button>
+      <button class="btn-action-cyan" style="background:#ff1744; color:#fff; margin-top:10px;" id="btnQuitGame">QUIT TO MENU</button>
+    </div>
+  </div>
+
+  <!-- ARCADE DIFFICULTY SELECTION MODAL -->
+  <div class="modal-overlay" id="arcadeDiffModal">
+    <div class="modal-card">
+      <div class="modal-title">ARCADE MODE</div>
+      <div class="modal-subtitle">Select Starting Difficulty</div>
+      <button class="btn-action-cyan btn-diff-option" data-diff="Easy" style="background:#00e676; color:#000;">EASY</button>
+      <button class="btn-action-cyan btn-diff-option" data-diff="Medium" style="background:#00b0ff; color:#000; margin-top:8px;">MEDIUM</button>
+      <button class="btn-action-cyan btn-diff-option" data-diff="Hard" style="background:#ff9100; color:#000; margin-top:8px;">HARD</button>
+      <button class="btn-action-cyan btn-diff-option" data-diff="HardCore" style="background:#ff1744; color:#fff; margin-top:8px;">HARDCORE</button>
+      <div><button class="btn-link-menu" id="btnCancelArcadeDiff">Cancel</button></div>
+    </div>
+  </div>
+
+  <!-- GAME OVER MODAL -->
+  <div class="modal-overlay" id="gameOverModal">
+    <div class="modal-card">
+      <div class="modal-title">GAME OVER</div>
+      <div class="modal-subtitle" id="gameOverZoneName">Coral Reef</div>
+      
+      <div class="stat-row">
+        <span>Score</span>
+        <span class="stat-row-val" id="finalScore">0</span>
+      </div>
+      <div class="stat-row">
+        <span>Coins</span>
+        <span class="stat-row-val" id="finalCoins">0</span>
+      </div>
+
+      <div id="resurrectContainer" style="display: none; width: 100%;">
+        <button class="btn-action-cyan btn-action-resurrect" id="btnUseResurrectKey">
+          🔑 USE KEY OF RESURRECTION (<span id="modalResKeyCount">1</span>)
+        </button>
+      </div>
+
+      <button class="btn-action-cyan" id="btnPlayAgain">PLAY AGAIN</button>
+      <div><button class="btn-link-menu" id="btnGameOverMainMenu">Main Menu</button></div>
+    </div>
+  </div>
+
+  <!-- MAIN MENU SCREEN -->
+  <div class="screen-overlay" id="mainMenuScreen">
+    <div class="main-menu-top-bar">
+      <div class="stat-badge-sm">BEST<span id="mainBestScore">0</span></div>
+      <button class="info-btn-icon" id="btnOpenInfoScreen" title="Game Info & Missions">ℹ️</button>
+      <div class="stat-badge-sm">COINS<span id="mainCoinsCount">0</span></div>
+    </div>
+
+    <div class="main-menu-content">
+      <svg class="game-logo-fish" viewBox="0 0 40 30">
+        <ellipse cx="20" cy="15" rx="16" ry="10" fill="#ff6d00"/>
+        <rect x="15" y="5" width="4" height="20" fill="#fff"/>
+        <circle cx="28" cy="12" r="2" fill="#000"/>
+      </svg>
+      
+      <div class="game-title-main">CLOWNFISH</div>
+      <div class="game-title-yellow">DELUXE EDITION</div>
+
+      <button class="menu-btn btn-arcade" id="btnPlayArcade">▶ PLAY ARCADE</button>
+      <button class="menu-btn btn-outline" id="btnStoryMode">📖 STORY MODE</button>
+      <button class="menu-btn btn-outline" id="btnShopMode" style="border-color: #00e5ff; color: #00e5ff;">🛒 FISH SHOP</button>
+      <button class="menu-btn btn-dev-mode" id="btnDevMode">⚙ DEVELOPER MODE</button>
+    </div>
+
+    <div style="font-size: 10px; color: #b0bec5; text-align: center; margin-top: auto; text-shadow: 0 1px 3px rgba(0,0,0,0.9);">
+      Tap anywhere in-game to swim
+    </div>
+  </div>
+
+  <!-- INFO & DAILY MISSIONS OVERLAY SCREEN -->
+  <div class="screen-overlay" id="infoScreen">
+    <div class="screen-header">
+      <button class="btn-back" id="btnInfoBack">← Back</button>
+      <div class="header-title-box">
+        <div class="header-title">ClownFish Guide</div>
+        <div class="header-subtitle">Daily Missions & Game Features</div>
+      </div>
+      <div style="width: 40px;"></div>
+    </div>
+
+    <div class="info-tabs">
+      <div class="info-tab active" data-infotab="tab-daily-missions">🎯 Missions</div>
+      <div class="info-tab" data-infotab="tab-fish-powers">🐟 Fish Powers</div>
+      <div class="info-tab" data-infotab="tab-game-guide">📜 Features</div>
+    </div>
+
+    <div class="info-tab-content active" id="tab-daily-missions">
+      <div class="dev-section-title">10 DAILY MISSIONS</div>
+      <div id="dailyMissionsContainer" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+
+    <div class="info-tab-content" id="tab-fish-powers">
+      <div class="dev-section-title">UNIQUE SPECIES POWERS</div>
+      <div id="fishPowersListContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+
+    <div class="info-tab-content" id="tab-game-guide">
+      <div class="dev-section-title">GAME Mechanics & Power-ups</div>
+      <div style="font-size:12px; color:#cfd8dc; line-height:1.5;">
+        <p>• <b>Arcade Mode:</b> Choose your starting difficulty and aim for the ultimate high score.</p>
+        <p style="margin-top:6px;">• <b>Story Mode:</b> Advance through 5 underwater zones from Coral Reef to Kraken Realm.</p>
+        <p style="margin-top:6px;">• <b>Power-Ups:</b></p>
+        <ul style="margin-left:20px; color:#a0aec0;">
+          <li>🛡️ <b>Shield:</b> Absorbs 1 hit safely.</li>
+          <li>🧲 <b>Magnet:</b> Pulls all nearby coins.</li>
+          <li>2️⃣ <b>2X Score:</b> Doubles points and coins.</li>
+          <li>★ <b>Rush:</b> Complete invincibility dash.</li>
+          <li>🔑 <b>Key:</b> Resurrects you upon defeat.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- STORY MODE SCREEN -->
+  <div class="screen-overlay" id="storyModeScreen">
+    <div class="screen-header">
+      <button class="btn-back" id="btnStoryBack">← Back</button>
+      <div class="header-title-box">
+        <div class="header-title">Story Mode</div>
+        <div class="header-subtitle">Nemo's Journey to the Deep</div>
+      </div>
+      <div style="width: 40px;"></div>
+    </div>
+
+    <div class="story-list" id="storyChaptersList"></div>
+
+    <div class="story-progress-bar-container">
+      <div class="story-progress-title">STORY PROGRESS</div>
+      <div class="progress-track"><div class="progress-fill" id="storyProgressFill"></div></div>
+      <div class="progress-pct" id="storyProgressPct">0%</div>
+    </div>
+  </div>
+
+  <!-- FISH SHOP SCREEN -->
+  <div class="screen-overlay" id="shopModeScreen">
+    <div class="screen-header">
+      <button class="btn-back" id="btnShopBack">← Back</button>
+      <div class="header-title-box">
+        <div class="header-title">Fish Shop</div>
+        <div class="header-subtitle">Unlock Species with Special Powers</div>
+      </div>
+      <div class="stat-badge-sm" style="padding: 4px 8px;">COINS<span id="shopCoinsDisplay">0</span></div>
+    </div>
+
+    <div class="shop-grid" id="shopFishGrid"></div>
+  </div>
+
+  <!-- DEVELOPER MODE AUTH SCREEN -->
+  <div class="screen-overlay" id="devAuthScreen">
+    <div class="screen-header">
+      <button class="btn-back" id="btnDevAuthBack">← Back</button>
+    </div>
+
+    <div class="dev-auth-container">
+      <div class="dev-wrench-icon">🔧</div>
+      <div class="dev-auth-title">Developer Mode</div>
+      <div class="dev-auth-sub">Enter the developer password to access game configuration<br><span style="color:#ffd700; font-weight:bold;">Hint: 0000</span></div>
+
+      <input type="password" class="dev-input" id="devPassInput" placeholder="Enter password... (Hint: 0000)">
+      
+      <label class="dev-remember-row">
+        <input type="checkbox" id="chkRememberDev" style="accent-color:#00e5ff;"> Remember & Stay Signed In
+      </label>
+
+      <button class="menu-btn btn-arcade" style="max-width: 320px;" id="btnDevUnlock">UNLOCK</button>
+    </div>
+  </div>
+
+  <!-- DEVELOPER MODE PANEL SCREEN -->
+  <div class="screen-overlay" id="devPanelScreen">
+    <div class="screen-header">
+      <button class="btn-back" id="btnDevPanelBack">← Back</button>
+      <div class="header-title">🔧 Developer Mode</div>
+      <button class="btn-back" style="color: #ff1744;" id="btnDevSignOut">Sign Out</button>
+    </div>
+
+    <div class="dev-active-badge">● DEV MODE ACTIVE — changes apply in next game</div>
+
+    <div class="dev-tabs">
+      <div class="dev-tab active" data-tab="tab-physics">Physics</div>
+      <div class="dev-tab" data-tab="tab-obstacles">Obstacles</div>
+      <div class="dev-tab" data-tab="tab-features">Features</div>
+      <div class="dev-tab" data-tab="tab-textures">Textures</div>
+      <div class="dev-tab" data-tab="tab-cheats">Cheats</div>
+    </div>
+
+    <div class="dev-tab-content active" id="tab-physics">
+      <div class="dev-section-title">GRAVITY & MOVEMENT</div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Normal Gravity</span>
+        <div class="dev-number-adjuster">
+          <button class="btn-adjust" onclick="adjustDevVal('normalGravity', -0.02)">-</button>
+          <span class="dev-value-display" id="val-normalGravity">0.38</span>
+          <button class="btn-adjust" onclick="adjustDevVal('normalGravity', 0.02)">+</button>
+        </div>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Low Gravity (warmup)</span>
+        <div class="dev-number-adjuster">
+          <button class="btn-adjust" onclick="adjustDevVal('lowGravity', -0.02)">-</button>
+          <span class="dev-value-display" id="val-lowGravity">0.18</span>
+          <button class="btn-adjust" onclick="adjustDevVal('lowGravity', 0.02)">+</button>
+        </div>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Jump Strength</span>
+        <div class="dev-number-adjuster">
+          <button class="btn-adjust" onclick="adjustDevVal('jumpStrength', -0.5)">-</button>
+          <span class="dev-value-display" id="val-jumpStrength">-6.4</span>
+          <button class="btn-adjust" onclick="adjustDevVal('jumpStrength', 0.5)">+</button>
+        </div>
+      </div>
+
+      <div class="dev-section-title" style="margin-top: 10px;">PLAYER</div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Starting Lives</span>
+        <div class="dev-number-adjuster">
+          <button class="btn-adjust" onclick="adjustDevVal('startingLives', -1)">-</button>
+          <span class="dev-value-display" id="val-startingLives">3</span>
+          <button class="btn-adjust" onclick="adjustDevVal('startingLives', 1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dev-tab-content" id="tab-obstacles">
+      <div class="dev-section-title">OBSTACLE PARAMETERS</div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Speed Multiplier</span>
+        <div class="dev-number-adjuster">
+          <button class="btn-adjust" onclick="adjustDevVal('speedMult', -0.1)">-</button>
+          <span class="dev-value-display" id="val-speedMult">1.00</span>
+          <button class="btn-adjust" onclick="adjustDevVal('speedMult', 0.1)">+</button>
+        </div>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Gap Size Multiplier</span>
+        <div class="dev-number-adjuster">
+          <button class="btn-adjust" onclick="adjustDevVal('gapMult', -0.1)">-</button>
+          <span class="dev-value-display" id="val-gapMult">1.00</span>
+          <button class="btn-adjust" onclick="adjustDevVal('gapMult', 0.1)">+</button>
+        </div>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Spawn Rate Multiplier</span>
+        <div class="dev-number-adjuster">
+          <button class="btn-adjust" onclick="adjustDevVal('spawnMult', -0.1)">-</button>
+          <span class="dev-value-display" id="val-spawnMult">1.00</span>
+          <button class="btn-adjust" onclick="adjustDevVal('spawnMult', 0.1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dev-tab-content" id="tab-features">
+      <div class="dev-section-title">GAME FEATURES & TOGGLES</div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Lock Arcade to Coral Reef</span>
+        <label class="switch"><input type="checkbox" id="chk-lockArcadeReef" checked><span class="slider"></span></label>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Arcade Scaling Difficulty</span>
+        <label class="switch"><input type="checkbox" id="chk-arcadeProgression" checked><span class="slider"></span></label>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Default Starting Keys (Arcade)</span>
+        <div class="dev-number-adjuster">
+          <button class="btn-adjust" onclick="adjustDevVal('defaultArcadeKeys', -1)">-</button>
+          <span class="dev-value-display" id="val-defaultArcadeKeys">1</span>
+          <button class="btn-adjust" onclick="adjustDevVal('defaultArcadeKeys', 1)">+</button>
+        </div>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Power-ups Enabled</span>
+        <label class="switch"><input type="checkbox" id="chk-powerups" checked><span class="slider"></span></label>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Spike Hazards on Pillars</span>
+        <label class="switch"><input type="checkbox" id="chk-spikes" checked><span class="slider"></span></label>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Oscillating Pillars</span>
+        <label class="switch"><input type="checkbox" id="chk-oscillate" checked><span class="slider"></span></label>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Shark Chase</span>
+        <label class="switch"><input type="checkbox" id="chk-shark" checked><span class="slider"></span></label>
+      </div>
+
+      <div class="dev-section-title" style="margin-top: 10px;">POWER-UP DURATIONS (frames)</div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Shield Duration</span>
+        <div class="dev-number-adjuster">
+          <button class="btn-adjust" onclick="adjustDevVal('shieldDur', -30)">-</button>
+          <span class="dev-value-display" id="val-shieldDur">360f</span>
+          <button class="btn-adjust" onclick="adjustDevVal('shieldDur', 30)">+</button>
+        </div>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Magnet Duration</span>
+        <div class="dev-number-adjuster">
+          <button class="btn-adjust" onclick="adjustDevVal('magnetDur', -30)">-</button>
+          <span class="dev-value-display" id="val-magnetDur">300f</span>
+          <button class="btn-adjust" onclick="adjustDevVal('magnetDur', 30)">+</button>
+        </div>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Double Score Duration</span>
+        <div class="dev-number-adjuster">
+          <button class="btn-adjust" onclick="adjustDevVal('doubleDur', -30)">-</button>
+          <span class="dev-value-display" id="val-doubleDur">300f</span>
+          <button class="btn-adjust" onclick="adjustDevVal('doubleDur', 30)">+</button>
+        </div>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Unstoppable Duration</span>
+        <div class="dev-number-adjuster">
+          <button class="btn-adjust" onclick="adjustDevVal('unstoppableDur', -30)">-</button>
+          <span class="dev-value-display" id="val-unstoppableDur">300f</span>
+          <button class="btn-adjust" onclick="adjustDevVal('unstoppableDur', 30)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dev-tab-content" id="tab-textures">
+      <div class="dev-section-title">PILLAR TEXTURE PRESETS</div>
+      
+      <div class="dev-control-row">
+        <span class="dev-control-label">Select Pillar Style</span>
+        <select class="dev-select" id="selPillarTexture">
+          <option value="procedural">Default Procedural</option>
+          <option value="atlantis_runes">Atlantis Glowing Runes</option>
+          <option value="brain_coral">Pink Brain Coral</option>
+          <option value="sea_anemone">Sea Anemone & Staghorn</option>
+          <option value="atlantis_obelisk">Atlantis Sunken Obelisk</option>
+          <option value="aquamarine_citadel">Aquamarine Citadel</option>
+          <option value="crystal_spire">Bioluminescent Crystal</option>
+          <option value="lava_basalt">Lava Vein Basalt Column</option>
+          <option value="kraken_mast">Kraken Shipwreck Mast</option>
+        </select>
+      </div>
+
+      <div class="dev-section-title" style="margin-top: 6px;">LIVE PREVIEW PLAY</div>
+      <div class="texture-preview-box" id="pillarPreviewBox"></div>
+
+      <button class="dev-action-btn btn-blue-action" style="background: #00e676; color: #000; border: none;" id="btnApplyPillarTexture">Apply Selected Texture</button>
+      <button class="dev-action-btn btn-red-action" id="btnRevertPillarTexture">Revert to Original Procedural</button>
+    </div>
+
+    <div class="dev-tab-content" id="tab-cheats">
+      <div class="dev-section-title">CHEAT TOGGLES</div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Infinite Lives</span>
+        <label class="switch"><input type="checkbox" id="chk-infiniteLives"><span class="slider"></span></label>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Infinite Resurrection Keys</span>
+        <label class="switch"><input type="checkbox" id="chk-infiniteKeys"><span class="slider"></span></label>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">Show Collision Hitboxes</span>
+        <label class="switch"><input type="checkbox" id="chk-hitboxes"><span class="slider"></span></label>
+      </div>
+      <div class="dev-control-row">
+        <span class="dev-control-label">All Story Chapters Unlocked</span>
+        <label class="switch"><input type="checkbox" id="chk-unlockAllChapters"><span class="slider"></span></label>
+      </div>
+
+      <div class="dev-section-title" style="margin-top: 10px;">ACTIONS & PRESETS</div>
+      <button class="dev-action-btn btn-blue-action" id="btnActionUnlockAll">Unlock All Story Chapters</button>
+      <button class="dev-action-btn btn-blue-action" id="btnActionEasy">Easy Mode (Big Gap + Slow)</button>
+      <button class="dev-action-btn btn-purple-action" id="btnActionNightmare">Nightmare Mode (Fast + Tight)</button>
+      <button class="dev-action-btn btn-red-action" id="btnActionResetDefault">Reset Dev Settings to Default</button>
+      
+      <div class="dev-section-title" style="margin-top: 14px; color:#ff1744;">DANGER ZONE</div>
+      <button class="dev-action-btn btn-stat-reset" id="btnFullStatisticalReset">⚠️ FULL STATISTICAL RESET</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   OPENING INTRO SPLASH CONTROLLER
+   ========================================================= */
+let introTimer = null;
+function finishIntroSplash() {
+  if (introTimer) clearTimeout(introTimer);
+  const splash = document.getElementById('introSplashScreen');
+  if (!splash) return;
+  splash.style.opacity = '0';
+  setTimeout(() => {
+    splash.classList.remove('active');
+    showScreen('mainMenuScreen');
+  }, 800);
+}
+
+document.getElementById('btnSkipIntro').addEventListener('click', (e) => {
+  e.stopPropagation();
+  finishIntroSplash();
+});
+
+document.getElementById('introSplashScreen').addEventListener('click', finishIntroSplash);
+introTimer = setTimeout(finishIntroSplash, 3500);
+
+class AudioController {
+  constructor() { this.ctx = null; }
+  init() {
+    if (!this.ctx) {
+      try {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      } catch(e) {}
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
+  }
+  playSwim() {
+    if (!this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(160, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(360, this.ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+      osc.connect(gain); gain.connect(this.ctx.destination);
+      osc.start(); osc.stop(this.ctx.currentTime + 0.1);
+    } catch(e) {}
+  }
+  playCoin() {
+    if (!this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(587.33, this.ctx.currentTime);
+      osc.frequency.setValueAtTime(880, this.ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
+      osc.connect(gain); gain.connect(this.ctx.destination);
+      osc.start(); osc.stop(this.ctx.currentTime + 0.18);
+    } catch(e) {}
+  }
+  playPowerup() {
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime, osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(260, now);
+      osc.frequency.exponentialRampToValueAtTime(950, now + 0.28);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+      osc.connect(gain); gain.connect(this.ctx.destination);
+      osc.start(); osc.stop(now + 0.3);
+    } catch(e) {}
+  }
+  playHit() {
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime, osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.linearRampToValueAtTime(50, now + 0.22);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.linearRampToValueAtTime(0.01, now + 0.22);
+      osc.connect(gain); gain.connect(this.ctx.destination);
+      osc.start(); osc.stop(now + 0.22);
+    } catch(e) {}
+  }
+}
+
+const audio = new AudioController();
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let W = 400, H = 700;
+function resizeCanvas() {
+  const container = canvas.parentElement;
+  W = container.clientWidth || window.innerWidth;
+  H = container.clientHeight || window.innerHeight;
+  canvas.width = W;
+  canvas.height = H;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+const STATE = { MENU: 0, PLAYING: 1, INTERMISSION: 2, GAMEOVER: 3, PAUSED: 4 };
+let currentState = STATE.MENU;
+
+let highScore = parseInt(localStorage.getItem('clownfish_deluxe_highscore') || '0');
+let totalCoins = parseInt(localStorage.getItem('clownfish_deluxe_coins') || '150');
+let unlockedStoryChapters = parseInt(localStorage.getItem('clownfish_story_progress') || '1');
+let equippedFishId = localStorage.getItem('clownfish_equipped_fish') || 'nemo';
+let unlockedFishIds = JSON.parse(localStorage.getItem('clownfish_unlocked_fishes') || '["nemo"]');
+
+const FISH_SPECIES = [
+  { id: 'nemo', name: 'Nemo Clownfish', price: 0, type: 'clownfish', bodyColor: '#ff6d00', stripeColor: '#ffffff', outlineColor: '#bf360c', powerDesc: '+10% Extra Coin Earnings', coinMult: 1.1, jumpMult: 1.0, extraLives: 0, startShield: false, startRush: false, spikeImmunity: false, autoMagnet: false, flashMult: 1.0, hitboxR: 19 },
+  { id: 'dory', name: 'Royal Blue Tang', price: 30, type: 'tang', bodyColor: '#0055ff', stripeColor: '#ffea00', outlineColor: '#002288', powerDesc: 'Starts every run with a Bubble Shield', coinMult: 1.0, jumpMult: 1.0, extraLives: 0, startShield: true, startRush: false, spikeImmunity: false, autoMagnet: false, flashMult: 1.0, hitboxR: 19 },
+  { id: 'goldfish', name: 'Golden Fish', price: 50, type: 'goldfish', bodyColor: '#ffea00', stripeColor: '#ffffff', outlineColor: '#f57f17', powerDesc: '+50% Gold Coin Bonus', coinMult: 1.5, jumpMult: 1.0, extraLives: 0, startShield: false, startRush: false, spikeImmunity: false, autoMagnet: false, flashMult: 1.0, hitboxR: 19 },
+  { id: 'pink_basslet', name: 'Neon Basslet', price: 70, type: 'basslet', bodyColor: '#ff1744', stripeColor: '#00e5ff', outlineColor: '#88001b', powerDesc: 'Neon Velocity (+15% Higher Jumps)', coinMult: 1.0, jumpMult: 1.15, extraLives: 0, startShield: false, startRush: false, spikeImmunity: false, autoMagnet: false, flashMult: 1.0, hitboxR: 19 },
+  { id: 'shadow_angel', name: 'Angelfish', price: 90, type: 'angel', bodyColor: '#311b92', stripeColor: '#00e5ff', outlineColor: '#12005e', powerDesc: 'Abyss Stealth (Double Invincibility Duration after damage)', coinMult: 1.0, jumpMult: 1.0, extraLives: 0, startShield: false, startRush: false, spikeImmunity: false, autoMagnet: false, flashMult: 2.0, hitboxR: 19 },
+  { id: 'anchovy', name: 'Silver Anchovy', price: 110, type: 'anchovy', bodyColor: '#b0bec5', stripeColor: '#00e5ff', outlineColor: '#37474f', powerDesc: 'Slim Silhouette (Narrower hitbox)', coinMult: 1.0, jumpMult: 1.0, extraLives: 0, startShield: false, startRush: false, spikeImmunity: false, autoMagnet: false, flashMult: 1.0, hitboxR: 14 },
+  { id: 'pufferfish', name: 'Spiky Pufferfish', price: 130, type: 'puffer', bodyColor: '#ffb300', stripeColor: '#8d6e63', outlineColor: '#e65100', powerDesc: 'Spike Immunity (Pillar spikes do no damage)', coinMult: 1.0, jumpMult: 1.0, extraLives: 0, startShield: false, startRush: false, spikeImmunity: true, autoMagnet: false, flashMult: 1.0, hitboxR: 19 },
+  { id: 'bass', name: 'Striped Bass', price: 150, type: 'bass', bodyColor: '#43a047', stripeColor: '#1b5e20', outlineColor: '#003300', powerDesc: 'Power Starter (Starts with 5s Rush)', coinMult: 1.0, jumpMult: 1.0, extraLives: 0, startShield: false, startRush: true, spikeImmunity: false, autoMagnet: false, flashMult: 1.0, hitboxR: 19 },
+  { id: 'catfish', name: 'Whiskered Catfish', price: 170, type: 'catfish', bodyColor: '#546e7a', stripeColor: '#263238', outlineColor: '#102027', powerDesc: 'Whisker Magnet (Permanent coin attraction)', coinMult: 1.0, jumpMult: 1.0, extraLives: 0, startShield: false, startRush: false, spikeImmunity: false, autoMagnet: true, flashMult: 1.0, hitboxR: 19 },
+  { id: 'trout', name: 'Rainbow Trout', price: 200, type: 'trout', bodyColor: '#e91e63', stripeColor: '#00e676', outlineColor: '#880e4f', powerDesc: 'Rainbow Fortune (Double coins & +20% jump agility)', coinMult: 2.0, jumpMult: 1.2, extraLives: 0, startShield: false, startRush: false, spikeImmunity: false, autoMagnet: false, flashMult: 1.0, hitboxR: 19 },
+  { id: 'crab', name: 'Dungeness Crab', price: 250, type: 'crab', bodyColor: '#ff3d00', stripeColor: '#ff9100', outlineColor: '#b21000', powerDesc: 'Armored Carapace (+1 Extra Heart on game start)', coinMult: 1.0, jumpMult: 1.0, extraLives: 1, startShield: false, startRush: false, spikeImmunity: false, autoMagnet: false, flashMult: 1.0, hitboxR: 19 }
+];
+
+const MISSION_DEFINITIONS = [
+  { id: 'm1', diff: 'Easy', desc: 'Swim past 10 pillar obstacles', target: 10, reward: 25, type: 'score' },
+  { id: 'm2', diff: 'Easy', desc: 'Collect 15 gold coins', target: 15, reward: 25, type: 'coins' },
+  { id: 'm3', diff: 'Easy', desc: 'Play 2 complete game runs', target: 2, reward: 25, type: 'runs' },
+  { id: 'm4', diff: 'Easy', desc: 'Acquire 1 power-up chip', target: 1, reward: 25, type: 'powerups' },
+  { id: 'm5', diff: 'Medium', desc: 'Reach a score of 35 points in a run', target: 35, reward: 60, type: 'score' },
+  { id: 'm6', diff: 'Medium', desc: 'Collect 40 total coins', target: 40, reward: 60, type: 'coins' },
+  { id: 'm7', diff: 'Medium', desc: 'Collect 3 power-up items', target: 3, reward: 60, type: 'powerups' },
+  { id: 'm8', diff: 'Hard', desc: 'Reach a score of 70 points in a run', target: 70, reward: 120, type: 'score' },
+  { id: 'm9', diff: 'Hard', desc: 'Collect 80 total coins', target: 80, reward: 120, type: 'coins' },
+  { id: 'm10', diff: 'Hardcore', desc: 'Reach 100 points in Hardcore Mode', target: 100, reward: 250, type: 'score_hardcore' }
+];
+
+let dailyMissionState = JSON.parse(localStorage.getItem('clownfish_daily_missions') || '{}');
+
+function getMissionProgress(id) {
+  return dailyMissionState[id] || { current: 0, completed: false, claimed: false };
+}
+
+function updateMissionTracker(type, amount, extraInfo = {}) {
+  let stateChanged = false;
+  MISSION_DEFINITIONS.forEach(m => {
+    let p = getMissionProgress(m.id);
+    if (p.completed) return;
+
+    if (m.type === type) {
+      if (type === 'score_hardcore') {
+        if (extraInfo.diff === 'HardCore' && amount > p.current) {
+          p.current = amount;
+          stateChanged = true;
+        }
+      } else if (type === 'score') {
+        if (amount > p.current) {
+          p.current = amount;
+          stateChanged = true;
+        }
+      } else {
+        p.current += amount;
+        stateChanged = true;
+      }
+
+      if (p.current >= m.target) {
+        p.completed = true;
+        p.current = m.target;
+        if (!p.claimed) {
+          p.claimed = true;
+          totalCoins += m.reward;
+          localStorage.setItem('clownfish_deluxe_coins', totalCoins.toString());
+          showAchievementPopup(`Mission Completed! +${m.reward} Coins`);
+        }
+      }
+      dailyMissionState[m.id] = p;
+    }
+  });
+
+  if (stateChanged) {
+    localStorage.setItem('clownfish_daily_missions', JSON.stringify(dailyMissionState));
+    renderDailyMissionsUI();
+  }
+}
+
+const DIFFICULTY_PRESETS = {
+  Easy: { speedMult: 0.8, gapMult: 1.3 },
+  Medium: { speedMult: 1.0, gapMult: 1.0 },
+  Hard: { speedMult: 1.25, gapMult: 0.85 },
+  HardCore: { speedMult: 1.5, gapMult: 0.75 }
+};
+const DIFFICULTY_ORDER = ['Easy', 'Medium', 'Hard', 'HardCore'];
+
+const PILLAR_SVG_DATA = {
+  atlantis_runes: {
+    bottom: `<svg width="120" height="320" viewBox="0 0 120 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="atlCol" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#6B8A99"/><stop offset="25%" stop-color="#B8D0DC"/><stop offset="75%" stop-color="#E2EEF4"/><stop offset="100%" stop-color="#4B6370"/></linearGradient><linearGradient id="goldCap" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FFD700"/><stop offset="100%" stop-color="#996B00"/></linearGradient><filter id="cyanGlow"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#00F0FF" flood-opacity="0.8"/></filter></defs><rect x="5" y="0" width="110" height="14" fill="url(#goldCap)" rx="2" stroke="#4A3400" stroke-width="2"/><rect x="12" y="14" width="96" height="16" fill="url(#goldCap)" rx="1" stroke="#4A3400" stroke-width="2"/><circle cx="60" cy="22" r="5" fill="#00F0FF" filter="url(#cyanGlow)"/><rect x="20" y="30" width="80" height="290" fill="url(#atlCol)" stroke="#2C3B43" stroke-width="2"/><line x1="36" y1="30" x2="36" y2="320" stroke="#4A606C" stroke-width="3"/><line x1="52" y1="30" x2="52" y2="320" stroke="#4A606C" stroke-width="3"/><line x1="68" y1="30" x2="68" y2="320" stroke="#4A606C" stroke-width="3"/><line x1="84" y1="30" x2="84" y2="320" stroke="#4A606C" stroke-width="3"/><path d="M 60 70 L 60 110 M 52 80 L 52 92 Q 60 100 68 92 L 68 80" stroke="#00F0FF" stroke-width="3" fill="none" filter="url(#cyanGlow)"/><polygon points="60,160 68,172 60,184 52,172" fill="#00F0FF" filter="url(#cyanGlow)"/><path d="M 60 230 L 60 270 M 52 240 L 68 260 M 68 240 L 52 260" stroke="#00F0FF" stroke-width="3" fill="none" filter="url(#cyanGlow)"/></svg>`,
+    top: `<svg width="120" height="320" viewBox="0 0 120 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="atlColInv" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#6B8A99"/><stop offset="25%" stop-color="#B8D0DC"/><stop offset="75%" stop-color="#E2EEF4"/><stop offset="100%" stop-color="#4B6370"/></linearGradient><linearGradient id="goldCapInv" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FFD700"/><stop offset="100%" stop-color="#996B00"/></linearGradient><filter id="cyanGlowInv"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#00F0FF" flood-opacity="0.8"/></filter></defs><rect x="20" y="0" width="80" height="290" fill="url(#atlColInv)" stroke="#2C3B43" stroke-width="2"/><line x1="36" y1="0" x2="36" y2="290" stroke="#4A606C" stroke-width="3"/><line x1="52" y1="0" x2="52" y2="290" stroke="#4A606C" stroke-width="3"/><line x1="68" y1="0" x2="68" y2="290" stroke="#4A606C" stroke-width="3"/><line x1="84" y1="0" x2="84" y2="290" stroke="#4A606C" stroke-width="3"/><path d="M 60 50 L 60 90 M 52 60 L 52 72 Q 60 80 68 72 L 68 60" stroke="#00F0FF" stroke-width="3" fill="none" filter="url(#cyanGlowInv)"/><polygon points="60,130 68,142 60,154 52,142" fill="#00F0FF" filter="url(#cyanGlowInv)"/><rect x="12" y="290" width="96" height="16" fill="url(#goldCapInv)" rx="1" stroke="#4A3400" stroke-width="2"/><rect x="5" y="306" width="110" height="14" fill="url(#goldCapInv)" rx="2" stroke="#4A3400" stroke-width="2"/><circle cx="60" cy="298" r="5" fill="#00F0FF" filter="url(#cyanGlowInv)"/></svg>`
+  },
+  brain_coral: {
+    bottom: `<svg width="120" height="320" viewBox="0 0 120 320" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="35" width="80" height="285" fill="#E8D3A7" stroke="#8C734B" stroke-width="3"/><circle cx="35" cy="80" r="6" fill="#D98A6C"/><circle cx="85" cy="120" r="10" fill="#D98A6C"/><circle cx="45" cy="190" r="8" fill="#D98A6C"/><circle cx="75" cy="250" r="7" fill="#D98A6C"/><path d="M 5 35 C 5 0, 115 0, 115 35 Z" fill="#FF6B8B" stroke="#B32445" stroke-width="3"/><path d="M 25 20 Q 35 10 45 20 Q 55 30 65 20 Q 75 10 85 20" stroke="#FFB3C1" stroke-width="4" fill="none"/><path d="M 30 28 Q 50 18 70 28 Q 80 22 90 28" stroke="#FFB3C1" stroke-width="3" fill="none"/></svg>`,
+    top: `<svg width="120" height="320" viewBox="0 0 120 320" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="0" width="80" height="285" fill="#E8D3A7" stroke="#8C734B" stroke-width="3"/><circle cx="35" cy="50" r="6" fill="#D98A6C"/><circle cx="85" cy="110" r="10" fill="#D98A6C"/><circle cx="45" cy="180" r="8" fill="#D98A6C"/><circle cx="75" cy="240" r="7" fill="#D98A6C"/><path d="M 5 285 C 5 320, 115 320, 115 285 Z" fill="#FF6B8B" stroke="#B32445" stroke-width="3"/><path d="M 25 300 Q 35 310 45 300 Q 55 290 65 300 Q 75 310 85 300" stroke="#FFB3C1" stroke-width="4" fill="none"/></svg>`
+  }
+};
+
+const preloadedPillarImages = {};
+function preloadPillarSVG(key) {
+  if (!PILLAR_SVG_DATA[key]) return;
+  preloadedPillarImages[key] = { top: new Image(), bottom: new Image() };
+  preloadedPillarImages[key].top.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(PILLAR_SVG_DATA[key].top);
+  preloadedPillarImages[key].bottom.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(PILLAR_SVG_DATA[key].bottom);
+}
+Object.keys(PILLAR_SVG_DATA).forEach(preloadPillarSVG);
+
+let activePillarStyle = localStorage.getItem('clownfish_pillar_style') || 'procedural';
+
+const ACHIEVEMENTS = [
+  { points: 10, bonusCoins: 20, desc: "Reached 10 Points! +20 Coins", claimed: false },
+  { points: 25, bonusCoins: 50, desc: "Reached 25 Points! +50 Coins", claimed: false },
+  { points: 50, bonusCoins: 100, desc: "Reached 50 Points! +100 Coins", claimed: false },
+  { points: 100, bonusCoins: 200, desc: "Reached 100 Points! +200 Coins", claimed: false }
+];
+
+const MILESTONES = [
+  { id: 1, threshold: 0, name: "Coral Reef", columnGap: 185, columnWidth: 68, speed: 1.8, theme: "reef", tag: "Easy", desc: "A fierce ocean current has torn Nemo from his family. He finds himself alone in the sunlit Coral Reef..." },
+  { id: 2, threshold: 200, name: "Sunken Atlantis", columnGap: 160, columnWidth: 62, speed: 2.6, theme: "atlantis", tag: "Medium", desc: "Deeper into ancient underwater ruins where mysterious structures create tight corridors." },
+  { id: 3, threshold: 600, name: "Dark Abyss", columnGap: 145, columnWidth: 56, speed: 3.1, theme: "abyss", tag: "Hard", desc: "Sunlight fails to reach here. Glowing deep sea dangers lurk in pitch black waters." },
+  { id: 4, threshold: 800, name: "Volcanic Trench", columnGap: 135, columnWidth: 50, speed: 3.5, theme: "volcano", tag: "Expert", desc: "Searing heat and thermal vents create extreme turbulence and moving magma pillars." },
+  { id: 5, threshold: 1000, name: "Kraken Realm", columnGap: 125, columnWidth: 46, speed: 3.9, theme: "kraken", tag: "Master", desc: "The domain of the ocean leviathan. Surviving here requires absolute perfection." }
+];
+
+const devSettings = {
+  normalGravity: 0.38,
+  lowGravity: 0.18,
+  jumpStrength: -6.4,
+  startingLives: 3,
+  speedMult: 1.0,
+  gapMult: 1.0,
+  spawnMult: 1.0,
+  powerupsEnabled: true,
+  spikesEnabled: true,
+  oscillateEnabled: true,
+  sharkEnabled: true,
+  shieldDur: 360,
+  magnetDur: 300,
+  doubleDur: 300,
+  unstoppableDur: 300,
+  infiniteLives: false,
+  showHitboxes: false,
+  unlockAllChapters: false,
+  lockArcadeReef: true,
+  arcadeProgressionEnabled: true,
+  defaultArcadeKeys: 1,
+  infiniteKeys: false
+};
+
+let currentMilestoneIdx = 0;
+let score = 0;
+let coinsEarnedThisRun = 0;
+let lives = 3;
+let frameCount = 0;
+let bannerTimer = 0;
+
+let doubleScoreTimer = 0;
+let unstoppableTimer = 0;
+let shieldTimer = 0;
+let magnetTimer = 0;
+let storyModeActive = false;
+
+let currentArcadeDiff = 'Medium';
+let resurrectionKeys = 0;
+let spawnedKeyPoints = {};
+
+const fish = {
+  x: 105, y: 300, radius: 19, vy: 0,
+  lowGravity: 0.18,
+  normalGravity: 0.38,
+  jumpStrength: -6.4,
+  angle: 0, invincibleFlash: 0, wigglePhase: 0, tailWiggle: 0,
+
+  reset() {
+    const curFish = FISH_SPECIES.find(f => f.id === equippedFishId) || FISH_SPECIES[0];
+    this.radius = curFish.hitboxR || 19;
+    this.y = H * 0.45;
+    this.vy = 0;
+    this.angle = 0;
+    this.invincibleFlash = 0;
+    this.wigglePhase = 0;
+    this.lowGravity = devSettings.lowGravity;
+    this.normalGravity = devSettings.normalGravity;
+    this.jumpStrength = devSettings.jumpStrength * (curFish.jumpMult || 1.0);
+  },
+
+  flap() {
+    this.vy = this.jumpStrength;
+    this.angle = -28;
+    audio.playSwim();
+  },
+
+  update() {
+    const activeGravity = score < 2 ? this.lowGravity : this.normalGravity;
+    this.vy += activeGravity;
+    this.y += this.vy;
+
+    this.wigglePhase += 0.18;
+    this.tailWiggle = Math.sin(this.wigglePhase) * 14;
+
+    if (this.vy > 1) this.angle = Math.min(68, this.angle + 3.2);
+    if (this.invincibleFlash > 0) this.invincibleFlash--;
+  }
+};
+
+const shark = {
+  x: -60, y: 300, targetY: 300, jawAngle: 0,
+  update() {
+    if (!devSettings.sharkEnabled) return;
+    this.targetY = fish.y;
+    this.y += (this.targetY - this.y) * 0.08;
+    this.x = 25 + Math.sin(frameCount * 0.05) * 8;
+    this.jawAngle = Math.sin(frameCount * 0.15) * 12;
+  },
+  draw(overrideX = null, overrideY = null, facingLeft = false) {
+    if (!devSettings.sharkEnabled && overrideX === null) return;
+    ctx.save();
+    ctx.translate(overrideX !== null ? overrideX : this.x, overrideY !== null ? overrideY : this.y);
+    if (facingLeft) ctx.scale(-1, 1);
+
+    ctx.fillStyle = '#263238';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 36, 18, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(-5, -16); ctx.lineTo(8, -32); ctx.lineTo(16, -16);
+    ctx.closePath(); ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(-34, 0); ctx.lineTo(-50, -18); ctx.lineTo(-44, 0); ctx.lineTo(-50, 18);
+    ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(20, -6 + this.jawAngle * 0.2);
+    ctx.lineTo(34, 0);
+    ctx.lineTo(20, 6 - this.jawAngle * 0.2);
+    ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle = '#ff1744';
+    ctx.beginPath();
+    ctx.arc(14, -6, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+};
+
+const cutscene = {
+  active: false,
+  timer: 0,
+  fishX: -50,
+  sharkX: -150,
+  starX: 0,
+  hasStar: false,
+  title: "",
+
+  start(title) {
+    currentState = STATE.INTERMISSION;
+    this.active = true;
+    this.timer = 0;
+    this.fishX = -50;
+    this.sharkX = -150;
+    this.starX = W / 2 + 30;
+    this.hasStar = false;
+    this.title = title;
+  },
+
+  update() {
+    this.timer++;
+
+    if (!this.hasStar) {
+      this.fishX += 3.8;
+      this.sharkX += 3.8;
+      if (this.fishX >= this.starX) {
+        this.hasStar = true;
+        audio.playPowerup();
+      }
+    } else {
+      this.fishX -= 4.8;
+      this.sharkX -= 4.8;
+    }
+
+    if (this.timer > 200) {
+      this.active = false;
+      currentState = STATE.PLAYING;
+      showBanner("GET READY!", 60);
+    }
+  },
+
+  draw() {
+    ctx.fillStyle = 'rgba(2, 12, 25, 0.9)';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = '#ffd700';
+    ctx.font = '900 24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(this.title, W / 2, H * 0.25);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillText("STAGE CLEAR INTERMISSION", W / 2, H * 0.30);
+
+    const midY = H * 0.55;
+
+    if (!this.hasStar) {
+      ctx.save();
+      ctx.translate(this.starX, midY);
+      ctx.fillStyle = '#ffeb3b';
+      ctx.font = 'bold 28px sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('🌟', 0, 0);
+      ctx.restore();
+
+      shark.draw(this.sharkX, midY, false);
+      drawClownfishSprite(this.fishX, midY, 0, 1.0, false);
+    } else {
+      shark.draw(this.sharkX, midY, true);
+      drawClownfishSprite(this.fishX, midY, 0, 2.2, true);
+    }
+  }
+};
+
+let particles = [];
+let bubbles = Array.from({ length: 25 }, () => ({
+  x: Math.random() * W, y: Math.random() * H,
+  r: Math.random() * 4 + 1.5, speed: Math.random() * 1.2 + 0.4,
+  swing: Math.random() * Math.PI * 2
+}));
+
+function addBubblesAt(x, y, count = 5) {
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: x + (Math.random() - 0.5) * 10,
+      y: y + (Math.random() - 0.5) * 10,
+      vx: (Math.random() - 0.5) * 2,
+      vy: -Math.random() * 2 - 1,
+      r: Math.random() * 3 + 2, alpha: 0.8, color: '#e0f7fa'
+    });
+  }
+}
+
+let columns = [];
+function spawnColumn() {
+  const currentConfig = MILESTONES[currentMilestoneIdx];
+  const gap = currentConfig.columnGap * devSettings.gapMult;
+  const colWidth = currentConfig.columnWidth;
+  const minTop = 75;
+  const maxTop = H - gap - 110;
+  const topHeight = Math.floor(Math.random() * (maxTop - minTop + 1)) + minTop;
+
+  columns.push({
+    x: W + colWidth, width: colWidth, gap: gap,
+    topHeight: topHeight, bottomY: topHeight + gap,
+    passed: false, 
+    hasSpike: devSettings.spikesEnabled && Math.random() < 0.35,
+    oscillation: devSettings.oscillateEnabled && Math.random() < 0.3 && currentMilestoneIdx >= 2,
+    oscPhase: Math.random() * Math.PI * 2, baseTopHeight: topHeight
+  });
+}
+
+let items = [];
+function spawnItem(x, gapY, gapHeight) {
+  if (!devSettings.powerupsEnabled) {
+    items.push({ x: x, y: gapY + gapHeight / 2, type: 'coin', collected: false, radius: 15, baseY: gapY + gapHeight / 2 });
+    return;
+  }
+
+  const rand = Math.random();
+  let type = 'coin';
+
+  if (rand < 0.04 && lives < devSettings.startingLives) type = 'heart';
+  else if (rand < 0.09) type = 'shield';
+  else if (rand < 0.14) type = 'magnet';
+  else if (rand < 0.19) type = 'double';
+  else if (rand < 0.23) type = 'unstoppable';
+
+  items.push({
+    x: x, y: gapY + gapHeight / 2 + (Math.sin(frameCount * 0.05) * 15),
+    type: type, collected: false, radius: 15, baseY: gapY + gapHeight / 2
+  });
+}
+
+function spawnKeyOfResurrection() {
+  items.push({
+    x: W + 30, y: H * 0.45,
+    type: 'key', collected: false, radius: 16, baseY: H * 0.45
+  });
+}
+
+function checkKeySpawns() {
+  if (storyModeActive) {
+    if (score >= 200 && (score === 200 || (score - 200) % 300 === 0)) {
+      if (!spawnedKeyPoints[score]) {
+        spawnedKeyPoints[score] = true;
+        spawnKeyOfResurrection();
+      }
+    }
+  } else {
+    if (score > 0 && score % 500 === 0) {
+      if (!spawnedKeyPoints[score]) {
+        spawnedKeyPoints[score] = true;
+        spawnKeyOfResurrection();
+      }
+    }
+  }
+}
+
+function checkAchievements() {
+  ACHIEVEMENTS.forEach(ach => {
+    if (!ach.claimed && score >= ach.points) {
+      ach.claimed = true;
+      totalCoins += ach.bonusCoins;
+      localStorage.setItem('clownfish_deluxe_coins', totalCoins.toString());
+      showAchievementPopup(ach.desc);
+      audio.playPowerup();
+      updateHUD();
+    }
+  });
+}
+
+function showAchievementPopup(text) {
+  const pop = document.getElementById('achievementPopup');
+  document.getElementById('achievementText').textContent = text;
+  pop.classList.add('show');
+  setTimeout(() => pop.classList.remove('show'), 3000);
+}
+
+function updateMilestones() {
+  if (storyModeActive) {
+    let newIdx = currentMilestoneIdx;
+    for (let i = MILESTONES.length - 1; i >= 0; i--) {
+      if (score >= MILESTONES[i].threshold) {
+        newIdx = i;
+        break;
+      }
+    }
+
+    if (newIdx !== currentMilestoneIdx) {
+      currentMilestoneIdx = newIdx;
+      const m = MILESTONES[currentMilestoneIdx];
+      document.getElementById('zoneBadge').textContent = m.name;
+      cutscene.start(`★ ZONE: ${m.name.toUpperCase()} ★`);
+      
+      if (currentMilestoneIdx + 1 > unlockedStoryChapters) {
+        unlockedStoryChapters = currentMilestoneIdx + 1;
+        localStorage.setItem('clownfish_story_progress', unlockedStoryChapters.toString());
+      }
+    }
+  } else {
+    if (devSettings.lockArcadeReef) {
+      currentMilestoneIdx = 0;
+    }
+  }
+}
+
+function showBanner(text, duration = 110) {
+  const bannerContainer = document.getElementById('bannerContainer');
+  const bannerText = document.getElementById('bannerText');
+  bannerText.textContent = text;
+  bannerContainer.style.display = 'flex';
+  bannerTimer = duration;
+}
+
+function drawBackground() {
+  const theme = MILESTONES[currentMilestoneIdx].theme;
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+
+  if (theme === 'reef') {
+    grad.addColorStop(0, '#0288d1'); grad.addColorStop(0.5, '#01579b'); grad.addColorStop(1, '#002f52');
+  } else if (theme === 'atlantis') {
+    grad.addColorStop(0, '#00695c'); grad.addColorStop(0.6, '#004d40'); grad.addColorStop(1, '#00251a');
+  } else if (theme === 'abyss') {
+    grad.addColorStop(0, '#1a237e'); grad.addColorStop(0.6, '#0d47a1'); grad.addColorStop(1, '#010a15');
+  } else if (theme === 'volcano') {
+    grad.addColorStop(0, '#3e2723'); grad.addColorStop(0.6, '#212121'); grad.addColorStop(1, '#0d0000');
+  } else {
+    grad.addColorStop(0, '#311b92'); grad.addColorStop(0.6, '#1a237e'); grad.addColorStop(1, '#000000');
+  }
+
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.save();
+  ctx.fillStyle = theme === 'volcano' ? 'rgba(255, 87, 34, 0.05)' : 'rgba(255, 255, 255, 0.05)';
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i * (W / 3) - 20, 0); ctx.lineTo(i * (W / 3) + 70, 0);
+    ctx.lineTo(i * (W / 3) + 150, H); ctx.lineTo(i * (W / 3) + 30, H);
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+
+  bubbles.forEach(b => {
+    b.y -= b.speed;
+    b.x += Math.sin(frameCount * 0.03 + b.swing) * 0.6;
+    if (b.y < -10) { b.y = H + 10; b.x = Math.random() * W; }
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.fillStyle = theme === 'volcano' ? 'rgba(255, 112, 67, 0.3)' : 'rgba(255, 255, 255, 0.25)';
+    ctx.fill();
+  });
+
+  ctx.fillStyle = theme === 'volcano' ? '#1a0505' : '#001428';
+  ctx.fillRect(0, H - 35, W, 35);
+
+  ctx.strokeStyle = theme === 'volcano' ? '#ff3d00' : '#00e676';
+  ctx.lineWidth = 5; ctx.lineCap = 'round';
+  for (let x = 12; x < W; x += 32) {
+    ctx.beginPath();
+    ctx.moveTo(x, H - 35);
+    ctx.quadraticCurveTo(x + Math.sin(frameCount * 0.04 + x) * 12, H - 65, x + Math.sin(frameCount * 0.04 + x) * 6, H - 90);
+    ctx.stroke();
+  }
+}
+
+function drawColumn(col) {
+  if (activePillarStyle !== 'procedural' && preloadedPillarImages[activePillarStyle]) {
+    const imgs = preloadedPillarImages[activePillarStyle];
+    if (imgs.top.complete && imgs.bottom.complete && imgs.top.naturalWidth > 0) {
+      try {
+        ctx.drawImage(imgs.top, col.x, 0, col.width, col.topHeight);
+        ctx.drawImage(imgs.bottom, col.x, col.bottomY, col.width, H - col.bottomY);
+        return;
+      } catch(e) {}
+    }
+  }
+
+  const theme = MILESTONES[currentMilestoneIdx].theme;
+  const headHeight = 22;
+
+  const drawPillarSection = (x, y, width, height, isTop) => {
+    const colGrad = ctx.createLinearGradient(x, 0, x + width, 0);
+    if (theme === 'volcano') {
+      colGrad.addColorStop(0, '#3e2723'); colGrad.addColorStop(0.4, '#5d4037'); colGrad.addColorStop(1, '#212121');
+    } else if (theme === 'abyss') {
+      colGrad.addColorStop(0, '#1a237e'); colGrad.addColorStop(0.4, '#283593'); colGrad.addColorStop(1, '#0d47a1');
+    } else {
+      colGrad.addColorStop(0, '#546e7a'); colGrad.addColorStop(0.35, '#b0bec5'); colGrad.addColorStop(0.7, '#78909c'); colGrad.addColorStop(1, '#37474f');
+    }
+
+    ctx.fillStyle = colGrad;
+    ctx.fillRect(x, y, width, height);
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+    ctx.lineWidth = 2;
+    for (let gx = x + 8; gx < x + width; gx += 10) {
+      ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx, y + height); ctx.stroke();
+    }
+
+    ctx.fillStyle = '#388e3c';
+    for (let my = y; my < y + height; my += 28) {
+      if ((my + Math.floor(x)) % 2 === 0) {
+        ctx.beginPath(); ctx.arc(x + 4, my, 7, 0, Math.PI * 2); ctx.arc(x + width - 4, my + 12, 6, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    const capX = x - 5, capWidth = width + 10, capY = isTop ? y + height - headHeight : y;
+    ctx.fillStyle = theme === 'volcano' ? '#ff6f00' : '#ffc107';
+    ctx.fillRect(capX, capY, capWidth, headHeight);
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(capX, capY, capWidth, headHeight);
+  };
+
+  drawPillarSection(col.x, 0, col.width, col.topHeight, true);
+  drawPillarSection(col.x, col.bottomY, col.width, H - col.bottomY, false);
+
+  if (col.hasSpike) {
+    ctx.fillStyle = '#e91e63';
+    ctx.beginPath();
+    const spikeY = col.topHeight - 30;
+    ctx.arc(col.x - 2, spikeY, 9, -Math.PI / 2, Math.PI / 2);
+    ctx.fill(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+
+  if (devSettings.showHitboxes) {
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(col.x, 0, col.width, col.topHeight);
+    ctx.strokeRect(col.x, col.bottomY, col.width, H - col.bottomY);
+  }
+}
+
+function drawClownfishSprite(x, y, angle, scale = 1.0, rainbowAura = false) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+  ctx.rotate((angle * Math.PI) / 180);
+
+  const curFish = FISH_SPECIES.find(f => f.id === equippedFishId) || FISH_SPECIES[0];
+
+  if (rainbowAura) {
+    ctx.beginPath();
+    ctx.arc(0, 0, 32, 0, Math.PI * 2);
+    const auraGrad = ctx.createRadialGradient(0, 0, 8, 0, 0, 36);
+    auraGrad.addColorStop(0, 'rgba(255, 235, 59, 0.9)');
+    auraGrad.addColorStop(0.5, 'rgba(255, 82, 82, 0.6)');
+    auraGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = auraGrad; ctx.fill();
+  }
+
+  ctx.save();
+  ctx.translate(-16, 0);
+  ctx.rotate((fish.tailWiggle * Math.PI) / 180);
+
+  if (curFish.type === 'puffer') {
+    ctx.fillStyle = curFish.bodyColor;
+    ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#e65100';
+    for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+      ctx.fillRect(Math.cos(a)*14, Math.sin(a)*14, 3, 3);
+    }
+  } else if (curFish.type === 'crab') {
+    ctx.fillStyle = curFish.bodyColor;
+    ctx.beginPath(); ctx.ellipse(0, 0, 18, 12, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillRect(-12, 8, 4, 8); ctx.fillRect(8, 8, 4, 8);
+  } else if (curFish.type === 'catfish') {
+    ctx.fillStyle = curFish.bodyColor;
+    ctx.beginPath(); ctx.ellipse(0, 0, 22, 14, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(14, 2); ctx.lineTo(24, 8); ctx.stroke();
+  } else {
+    ctx.fillStyle = curFish.bodyColor;
+    ctx.beginPath();
+    ctx.moveTo(0, 0); ctx.lineTo(-14, -11); ctx.lineTo(-10, 0); ctx.lineTo(-14, 11); ctx.closePath();
+    ctx.fill(); ctx.strokeStyle = curFish.stripeColor; ctx.lineWidth = 2; ctx.stroke();
+  }
+  ctx.restore();
+
+  if (curFish.type !== 'puffer' && curFish.type !== 'crab' && curFish.type !== 'catfish') {
+    ctx.beginPath(); ctx.ellipse(0, 0, 22, 16, 0, 0, Math.PI * 2);
+    ctx.fillStyle = curFish.bodyColor; ctx.fill();
+    ctx.strokeStyle = curFish.outlineColor; ctx.lineWidth = 2; ctx.stroke();
+
+    ctx.fillStyle = curFish.stripeColor;
+    ctx.beginPath(); ctx.rect(-5, -14, 7, 28); ctx.fill();
+    ctx.strokeStyle = '#212121'; ctx.lineWidth = 1.2; ctx.strokeRect(-5, -14, 7, 28);
+  }
+
+  ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(10, -5, 6, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(12, -5, 3, 0, Math.PI * 2); ctx.fill();
+
+  ctx.restore();
+}
+
+function drawClownfish(x, y, angle) {
+  if (shieldTimer > 0) {
+    ctx.save(); ctx.translate(x, y);
+    ctx.beginPath(); ctx.arc(0, 0, 32, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0, 229, 255, 0.25)'; ctx.fill();
+    ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.restore();
+  }
+
+  if (fish.invincibleFlash > 0 && Math.floor(frameCount / 4) % 2 === 0) {
+    ctx.globalAlpha = 0.35;
+  }
+
+  drawClownfishSprite(x, y, angle, 1.0, unstoppableTimer > 0);
+  ctx.globalAlpha = 1.0;
+
+  if (devSettings.showHitboxes) {
+    ctx.strokeStyle = '#00ff00';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(fish.x - fish.radius, fish.y - 11, fish.radius * 2, 22);
+  }
+}
+
+function drawItems() {
+  items.forEach(item => {
+    if (item.collected) return;
+    ctx.save(); ctx.translate(item.x, item.y);
+
+    if (item.type === 'heart') {
+      ctx.fillStyle = '#ff1744';
+      ctx.beginPath(); ctx.arc(-5, -4, 7, 0, Math.PI * 2); ctx.arc(5, -4, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-11, -1); ctx.lineTo(0, 11); ctx.lineTo(11, -1); ctx.closePath(); ctx.fill();
+    } else if (item.type === 'shield') {
+      ctx.fillStyle = '#00e5ff'; ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🛡️', 0, 1);
+    } else if (item.type === 'magnet') {
+      ctx.fillStyle = '#e040fb'; ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🧲', 0, 1);
+    } else if (item.type === 'double') {
+      ctx.fillStyle = '#ffc107'; ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#000'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('2X', 0, 1);
+    } else if (item.type === 'unstoppable') {
+      ctx.fillStyle = '#ff3d00'; ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffeb3b'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('★', 0, 1);
+    } else if (item.type === 'key') {
+      ctx.fillStyle = '#ffd700'; ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = '#000'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🔑', 0, 1);
+    } else {
+      ctx.fillStyle = '#ffea00'; ctx.beginPath(); ctx.ellipse(0, 0, 10, 6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(-14, -5); ctx.lineTo(-14, 5); ctx.closePath(); ctx.fill();
+    }
+
+    ctx.restore();
+  });
+}
+
+// Optimized DOM HUD state cache
+let cachedHUD = { score: -1, keys: -1, lives: -1, activePowerups: '', gravText: '' };
+
+function updateHUD() {
+  if (cachedHUD.score !== score) {
+    document.getElementById('scoreText').textContent = score;
+    cachedHUD.score = score;
+  }
+
+  if (cachedHUD.keys !== resurrectionKeys) {
+    document.getElementById('hudKeyCount').textContent = devSettings.infiniteKeys ? '∞' : resurrectionKeys;
+    cachedHUD.keys = resurrectionKeys;
+  }
+
+  if (cachedHUD.lives !== lives) {
+    const heartElems = document.querySelectorAll('.heart-icon');
+    heartElems.forEach((h, idx) => {
+      if (idx < lives) h.classList.remove('lost');
+      else h.classList.add('lost');
+    });
+    cachedHUD.lives = lives;
+  }
+
+  const gravEl = document.getElementById('gravityIndicator');
+  const targetGravText = score < 2 ? 'Low Gravity Warmup' : 'Normal Gravity Active';
+  if (cachedHUD.gravText !== targetGravText) {
+    gravEl.textContent = targetGravText;
+    if (score < 2) gravEl.classList.remove('normal');
+    else gravEl.classList.add('normal');
+    cachedHUD.gravText = targetGravText;
+  }
+
+  const powerupStateStr = `${shieldTimer > 0 ? Math.ceil(shieldTimer/60) : 0}-${magnetTimer > 0 ? Math.ceil(magnetTimer/60) : 0}-${doubleScoreTimer > 0 ? Math.ceil(doubleScoreTimer/60) : 0}-${unstoppableTimer > 0 ? Math.ceil(unstoppableTimer/60) : 0}`;
+  
+  if (cachedHUD.activePowerups !== powerupStateStr) {
+    cachedHUD.activePowerups = powerupStateStr;
+    const powerupContainer = document.getElementById('powerupTimersHUD');
+    let html = '';
+    
+    if (shieldTimer > 0) html += `<div class="powerup-timer-chip" style="border-color:#00e5ff;">🛡️ Shield: ${Math.ceil(shieldTimer / 60)}s</div>`;
+    if (magnetTimer > 0) html += `<div class="powerup-timer-chip" style="border-color:#e040fb;">🧲 Magnet: ${Math.ceil(magnetTimer / 60)}s</div>`;
+    if (doubleScoreTimer > 0) html += `<div class="powerup-timer-chip" style="border-color:#ffc107;">2X Score: ${Math.ceil(doubleScoreTimer / 60)}s</div>`;
+    if (unstoppableTimer > 0) html += `<div class="powerup-timer-chip" style="border-color:#ff3d00;">★ Rush: ${Math.ceil(unstoppableTimer / 60)}s</div>`;
+    
+    powerupContainer.innerHTML = html;
+  }
+
+  document.getElementById('mainBestScore').textContent = highScore;
+  document.getElementById('mainCoinsCount').textContent = totalCoins;
+  document.getElementById('shopCoinsDisplay').textContent = totalCoins;
+}
+
+function handleDamage(isSpike = false) {
+  if (devSettings.infiniteLives) return;
+  if (unstoppableTimer > 0 || fish.invincibleFlash > 0) return;
+
+  const curFish = FISH_SPECIES.find(f => f.id === equippedFishId) || FISH_SPECIES[0];
+  if (isSpike && curFish.spikeImmunity) {
+    showBanner("Spike Immunity Protected You!");
+    return;
+  }
+
+  if (shieldTimer > 0) {
+    shieldTimer = 0;
+    fish.invincibleFlash = 45;
+    audio.playHit();
+    showBanner("Shield Absorbed Damage!");
+    return;
+  }
+
+  lives--;
+  audio.playHit();
+  fish.invincibleFlash = Math.round(60 * (curFish.flashMult || 1.0));
+  updateHUD();
+
+  if (lives <= 0) triggerGameOver();
+}
+
+function triggerGameOver() {
+  currentState = STATE.GAMEOVER;
+  const modal = document.getElementById('gameOverModal');
+  document.getElementById('finalScore').textContent = score;
+  document.getElementById('finalCoins').textContent = coinsEarnedThisRun;
+
+  const currentDiffName = getCurrentArcadeDiffName();
+  document.getElementById('gameOverZoneName').textContent = storyModeActive 
+    ? MILESTONES[currentMilestoneIdx].name 
+    : `Coral Reef (${currentDiffName})`;
+
+  const resContainer = document.getElementById('resurrectContainer');
+  document.getElementById('modalResKeyCount').textContent = devSettings.infiniteKeys ? '∞' : resurrectionKeys;
+
+  if (resurrectionKeys > 0 || devSettings.infiniteKeys) {
+    resContainer.style.display = 'block';
+  } else {
+    resContainer.style.display = 'none';
+  }
+
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('clownfish_deluxe_highscore', highScore.toString());
+  }
+
+  totalCoins += coinsEarnedThisRun;
+  localStorage.setItem('clownfish_deluxe_coins', totalCoins.toString());
+
+  updateMissionTracker('score', score);
+  updateMissionTracker('score_hardcore', score, { diff: currentArcadeDiff });
+  updateMissionTracker('runs', 1);
+
+  modal.classList.add('active');
+}
+
+function executeResurrection() {
+  if (resurrectionKeys > 0 || devSettings.infiniteKeys) {
+    if (!devSettings.infiniteKeys) resurrectionKeys--;
+    lives = 1;
+    fish.y = H * 0.45;
+    fish.vy = 0;
+    fish.invincibleFlash = 120;
+    shieldTimer = 180;
+    document.getElementById('gameOverModal').classList.remove('active');
+    currentState = STATE.PLAYING;
+    showBanner("RESURRECTED!", 90);
+    updateHUD();
+  }
+}
+
+function getCurrentArcadeDiffName() {
+  if (storyModeActive) return 'Story';
+  if (!devSettings.arcadeProgressionEnabled) return currentArcadeDiff;
+
+  const baseIdx = DIFFICULTY_ORDER.indexOf(currentArcadeDiff);
+  const extraSteps = Math.floor(score / 500);
+  const effectiveIdx = Math.min(DIFFICULTY_ORDER.length - 1, baseIdx + extraSteps);
+  return DIFFICULTY_ORDER[effectiveIdx];
+}
+
+function resetGame(startMilestoneIdx = 0, isStory = false, arcadeDiff = 'Medium') {
+  score = 0; 
+  coinsEarnedThisRun = 0;
+  frameCount = 0; 
+  bannerTimer = 0;
+  doubleScoreTimer = 0; 
+  unstoppableTimer = 0; 
+  shieldTimer = 0; 
+  magnetTimer = 0;
+  currentMilestoneIdx = startMilestoneIdx;
+  storyModeActive = isStory;
+  currentArcadeDiff = arcadeDiff;
+  spawnedKeyPoints = {};
+
+  const curFish = FISH_SPECIES.find(f => f.id === equippedFishId) || FISH_SPECIES[0];
+  lives = devSettings.startingLives + (curFish.extraLives || 0);
+
+  if (curFish.startShield) shieldTimer = devSettings.shieldDur;
+  if (curFish.startRush) unstoppableTimer = 300;
+
+  if (!storyModeActive) {
+    resurrectionKeys = devSettings.defaultArcadeKeys;
+  } else {
+    resurrectionKeys = 0;
+  }
+
+  ACHIEVEMENTS.forEach(a => a.claimed = false);
+
+  columns = []; items = []; particles = [];
+  fish.reset();
+  shark.x = -60;
+
+  const zoneName = storyModeActive ? MILESTONES[currentMilestoneIdx].name : `Coral Reef (${currentArcadeDiff})`;
+  document.getElementById('zoneBadge').textContent = zoneName;
+
+  cachedHUD = { score: -1, keys: -1, lives: -1, activePowerups: '', gravText: '' };
+  updateHUD();
+  document.getElementById('bannerContainer').style.display = 'none';
+  document.getElementById('gameOverModal').classList.remove('active');
+  hideAllScreens();
+  currentState = STATE.PLAYING;
+}
+
+function update() {
+  if (currentState === STATE.INTERMISSION) {
+    cutscene.update();
+    return;
+  }
+
+  if (currentState !== STATE.PLAYING) return;
+
+  frameCount++;
+
+  if (doubleScoreTimer > 0) doubleScoreTimer--;
+  if (unstoppableTimer > 0) unstoppableTimer--;
+  if (shieldTimer > 0) shieldTimer--;
+  if (magnetTimer > 0) magnetTimer--;
+
+  updateHUD();
+
+  if (bannerTimer > 0) {
+    bannerTimer--;
+    if (bannerTimer <= 0) document.getElementById('bannerContainer').style.display = 'none';
+  }
+
+  fish.update();
+  shark.update();
+  updateMilestones();
+  checkKeySpawns();
+  checkAchievements();
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy; p.alpha -= 0.02;
+    if (p.alpha <= 0) particles.splice(i, 1);
+  }
+
+  let speedMult = devSettings.speedMult;
+  let gapMult = devSettings.gapMult;
+
+  if (!storyModeActive) {
+    const activeDiffName = getCurrentArcadeDiffName();
+    const preset = DIFFICULTY_PRESETS[activeDiffName];
+    
+    const baseIdx = DIFFICULTY_ORDER.indexOf(currentArcadeDiff);
+    const extraSteps = Math.floor(score / 500);
+    const overflow = Math.max(0, (baseIdx + extraSteps) - (DIFFICULTY_ORDER.length - 1));
+    const overflowFactor = 1 + (overflow * 0.12);
+
+    speedMult *= preset.speedMult * overflowFactor;
+    gapMult *= Math.max(0.5, preset.gapMult / overflowFactor);
+
+    document.getElementById('zoneBadge').textContent = `Coral Reef [${activeDiffName}]`;
+  }
+
+  const currentSpeed = MILESTONES[currentMilestoneIdx].speed * speedMult;
+
+  if (fish.y + fish.radius >= H - 35 || fish.y - fish.radius <= 0) {
+    triggerGameOver();
+    return;
+  }
+
+  const spawnInterval = Math.floor(125 / devSettings.spawnMult);
+  if (frameCount % Math.max(40, spawnInterval) === 0) spawnColumn();
+
+  const curFish = FISH_SPECIES.find(f => f.id === equippedFishId) || FISH_SPECIES[0];
+
+  for (let i = columns.length - 1; i >= 0; i--) {
+    const col = columns[i];
+    col.x -= currentSpeed;
+
+    if (col.oscillation) {
+      col.oscPhase += 0.04;
+      const offset = Math.sin(col.oscPhase) * 22;
+      col.topHeight = col.baseTopHeight + offset;
+      col.bottomY = col.topHeight + col.gap;
+    }
+
+    if (!col.spawnedItem && col.x < W - 40) {
+      col.spawnedItem = true;
+      spawnItem(col.x, col.topHeight, col.gap);
+    }
+
+    if (!col.passed && col.x + col.width < fish.x) {
+      col.passed = true;
+      score += (doubleScoreTimer > 0 ? 2 : 1);
+      updateHUD();
+    }
+
+    const fishBox = { left: fish.x - fish.radius, right: fish.x + fish.radius, top: fish.y - 11, bottom: fish.y + 11 };
+    const colBox = { left: col.x, right: col.x + col.width };
+
+    if (fishBox.right > colBox.left && fishBox.left < colBox.right) {
+      if (fishBox.top < col.topHeight || fishBox.bottom > col.bottomY) handleDamage(col.hasSpike);
+    }
+
+    if (col.x < -col.width) columns.splice(i, 1);
+  }
+
+  for (let i = items.length - 1; i >= 0; i--) {
+    const item = items[i];
+    item.x -= currentSpeed;
+
+    if ((magnetTimer > 0 || curFish.autoMagnet) && item.type === 'coin') {
+      const dx = fish.x - item.x;
+      const dy = fish.y - item.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 200) {
+        item.x += (dx / dist) * 5;
+        item.y += (dy / dist) * 5;
+      }
+    }
+
+    if (!item.collected) {
+      const dist = Math.hypot(fish.x - item.x, fish.y - item.y);
+      if (dist < fish.radius + item.radius) {
+        item.collected = true;
+        addBubblesAt(item.x, item.y, 8);
+
+        if (item.type === 'heart') { 
+          if (lives < devSettings.startingLives + (curFish.extraLives || 0)) lives++; 
+          audio.playPowerup(); 
+          updateHUD(); 
+        }
+        else if (item.type === 'shield') { shieldTimer = devSettings.shieldDur; showBanner("Bubble Shield Acquired!"); audio.playPowerup(); updateMissionTracker('powerups', 1); }
+        else if (item.type === 'magnet') { magnetTimer = devSettings.magnetDur; showBanner("Magnet Shell Activated!"); audio.playPowerup(); updateMissionTracker('powerups', 1); }
+        else if (item.type === 'double') { doubleScoreTimer = devSettings.doubleDur; showBanner("Double Score (2X)!"); audio.playPowerup(); updateMissionTracker('powerups', 1); }
+        else if (item.type === 'unstoppable') { unstoppableTimer = devSettings.unstoppableDur; showBanner("Unstoppable Rush Activated!"); audio.playPowerup(); updateMissionTracker('powerups', 1); }
+        else if (item.type === 'key') {
+          resurrectionKeys++;
+          showBanner("🔑 Key of Resurrection Acquired!");
+          audio.playPowerup();
+          updateHUD();
+        } else { 
+          const baseEarned = (doubleScoreTimer > 0 ? 2 : 1);
+          const totalCoinValue = Math.round(baseEarned * (curFish.coinMult || 1.0));
+          score += baseEarned; 
+          coinsEarnedThisRun += totalCoinValue;
+          updateMissionTracker('coins', totalCoinValue);
+          audio.playCoin(); 
+          updateHUD(); 
+        }
+      }
+    }
+
+    if (item.x < -30) items.splice(i, 1);
+  }
+}
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  drawBackground();
+
+  shark.draw();
+  columns.forEach(col => drawColumn(col));
+  drawItems();
+
+  particles.forEach(p => {
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1.0;
+  });
+
+  drawClownfish(fish.x, fish.y, fish.angle);
+
+  if (currentState === STATE.INTERMISSION) {
+    cutscene.draw();
+  }
+}
+
+/* --- FPS CAPPED GAME LOOP --- */
+let lastFrameTime = 0;
+const TARGET_FPS = 60;
+const FRAME_INTERVAL = 1000 / TARGET_FPS;
+
+function gameLoop(timestamp) {
+  if (!lastFrameTime) lastFrameTime = timestamp;
+  const elapsed = timestamp - lastFrameTime;
+
+  if (elapsed >= FRAME_INTERVAL) {
+    update();
+    render();
+    lastFrameTime = timestamp - (elapsed % FRAME_INTERVAL);
+  }
+  requestAnimationFrame(gameLoop);
+}
+
+/* --- DEBOUNCED INPUT HANDLER --- */
+let lastInputTime = 0;
+
+function handleInput(e) {
+  if (e) {
+    if (e.type === 'touchstart') e.preventDefault();
+  }
+
+  const now = performance.now();
+  if (now - lastInputTime < 80) return;
+  lastInputTime = now;
+
+  audio.init();
+  if (currentState === STATE.PLAYING) fish.flap();
+}
+
+function hideAllScreens() {
+  document.querySelectorAll('.screen-overlay').forEach(s => s.classList.remove('active'));
+}
+
+function showScreen(id) {
+  hideAllScreens();
+  document.getElementById(id).classList.add('active');
+  currentState = STATE.MENU;
+}
+
+function renderStoryChapters() {
+  const container = document.getElementById('storyChaptersList');
+  container.innerHTML = '';
+  
+  const effectiveUnlocked = devSettings.unlockAllChapters ? 5 : unlockedStoryChapters;
+
+  MILESTONES.forEach((m, idx) => {
+    const isUnlocked = (idx + 1) <= effectiveUnlocked;
+    const card = document.createElement('div');
+    card.className = `chapter-card ${isUnlocked ? 'unlocked' : 'locked'}`;
+
+    let icon = "🪸";
+    if (m.theme === 'atlantis') icon = "🏛️";
+    if (m.theme === 'abyss') icon = "🌌";
+    if (m.theme === 'volcano') icon = "🌋";
+    if (m.theme === 'kraken') icon = "🦑";
+
+    card.innerHTML = `
+      <div class="chapter-icon">${icon}</div>
+      <div class="chapter-info">
+        <div style="font-size: 10px; color: #00e5ff; font-weight: 700;">CH. ${m.id}</div>
+        <div class="chapter-title">${m.name}</div>
+        <div class="chapter-desc">${isUnlocked ? m.desc : 'Complete previous chapter to unlock'}</div>
+        ${isUnlocked ? `<div class="chapter-tag">● ${m.tag}</div>` : ''}
+      </div>
+      ${isUnlocked 
+        ? `<button class="btn-play-chapter" onclick="resetGame(${idx}, true)">▶</button>`
+        : `<div class="lock-icon">🔒</div>`
+      }
+    `;
+    container.appendChild(card);
+  });
+
+  const progressPct = Math.round(((effectiveUnlocked - 1) / (MILESTONES.length - 1)) * 100);
+  document.getElementById('storyProgressFill').style.width = `${progressPct}%`;
+  document.getElementById('storyProgressPct').textContent = `${progressPct}%`;
+}
+
+function renderShopGrid() {
+  const container = document.getElementById('shopFishGrid');
+  container.innerHTML = '';
+
+  FISH_SPECIES.forEach(f => {
+    const isUnlocked = unlockedFishIds.includes(f.id);
+    const isEquipped = equippedFishId === f.id;
+
+    const card = document.createElement('div');
+    card.className = `shop-card ${isEquipped ? 'equipped' : ''}`;
+
+    let actionBtn = '';
+    if (isEquipped) {
+      actionBtn = `<button class="btn-shop-action btn-shop-equipped">EQUIPPED</button>`;
+    } else if (isUnlocked) {
+      actionBtn = `<button class="btn-shop-action btn-shop-equip" onclick="equipFish('${f.id}')">EQUIP</button>`;
+    } else {
+      actionBtn = `<button class="btn-shop-action btn-shop-buy" onclick="buyFish('${f.id}', ${f.price})">BUY ${f.price} 🪙</button>`;
+    }
+
+    card.innerHTML = `
+      <div class="shop-fish-name">${f.name}</div>
+      <svg class="shop-fish-preview" viewBox="0 0 40 30">
+        <ellipse cx="20" cy="15" rx="16" ry="10" fill="${f.bodyColor}"/>
+        <rect x="15" y="5" width="4" height="20" fill="${f.stripeColor}"/>
+        <circle cx="28" cy="12" r="2" fill="#000"/>
+      </svg>
+      <div class="shop-fish-power">✨ ${f.powerDesc}</div>
+      <div class="shop-fish-price">${isUnlocked ? 'UNLOCKED' : f.price + ' Coins'}</div>
+      ${actionBtn}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function renderDailyMissionsUI() {
+  const container = document.getElementById('dailyMissionsContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  MISSION_DEFINITIONS.forEach(m => {
+    const p = getMissionProgress(m.id);
+    const card = document.createElement('div');
+    card.className = `mission-card ${p.completed ? 'completed' : ''}`;
+
+    const diffClass = `diff-${m.diff.toLowerCase()}`;
+
+    card.innerHTML = `
+      <div class="mission-left">
+        <span class="mission-diff-badge ${diffClass}">${m.diff}</span>
+        <div class="mission-desc">${m.desc}</div>
+        <div class="mission-reward">🪙 +${m.reward} Coins</div>
+      </div>
+      <div class="mission-progress-num">
+        ${p.completed ? '✅ DONE' : `${p.current}/${m.target}`}
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  const powersContainer = document.getElementById('fishPowersListContainer');
+  if (powersContainer) {
+    powersContainer.innerHTML = '';
+    FISH_SPECIES.forEach(f => {
+      const row = document.createElement('div');
+      row.style.cssText = "background:rgba(10,25,45,0.7); border:1px solid rgba(0,229,255,0.2); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;";
+      row.innerHTML = `
+        <span style="font-size:12px; font-weight:800; color:#fff;">${f.name}</span>
+        <span style="font-size:11px; font-weight:700; color:#00e5ff;">${f.powerDesc}</span>
+      `;
+      powersContainer.appendChild(row);
+    });
+  }
+}
+
+function equipFish(id) {
+  equippedFishId = id;
+  localStorage.setItem('clownfish_equipped_fish', id);
+  renderShopGrid();
+}
+
+function buyFish(id, price) {
+  if (totalCoins >= price) {
+    totalCoins -= price;
+    unlockedFishIds.push(id);
+    localStorage.setItem('clownfish_deluxe_coins', totalCoins.toString());
+    localStorage.setItem('clownfish_unlocked_fishes', JSON.stringify(unlockedFishIds));
+    equipFish(id);
+    updateHUD();
+  } else {
+    alert("Not enough coins to buy this fish!");
+  }
+}
+
+function updateDevUIDisplays() {
+  document.getElementById('val-normalGravity').textContent = devSettings.normalGravity.toFixed(2);
+  document.getElementById('val-lowGravity').textContent = devSettings.lowGravity.toFixed(2);
+  document.getElementById('val-jumpStrength').textContent = devSettings.jumpStrength.toFixed(1);
+  document.getElementById('val-startingLives').textContent = devSettings.startingLives;
+  document.getElementById('val-speedMult').textContent = devSettings.speedMult.toFixed(2);
+  document.getElementById('val-gapMult').textContent = devSettings.gapMult.toFixed(2);
+  document.getElementById('val-spawnMult').textContent = devSettings.spawnMult.toFixed(2);
+  document.getElementById('val-shieldDur').textContent = devSettings.shieldDur + 'f';
+  document.getElementById('val-magnetDur').textContent = devSettings.magnetDur + 'f';
+  document.getElementById('val-doubleDur').textContent = devSettings.doubleDur + 'f';
+  document.getElementById('val-unstoppableDur').textContent = devSettings.unstoppableDur + 'f';
+  document.getElementById('val-defaultArcadeKeys').textContent = devSettings.defaultArcadeKeys;
+
+  document.getElementById('selPillarTexture').value = activePillarStyle;
+  updatePillarPreviewBox(activePillarStyle);
+
+  document.getElementById('chk-lockArcadeReef').checked = devSettings.lockArcadeReef;
+  document.getElementById('chk-arcadeProgression').checked = devSettings.arcadeProgressionEnabled;
+  document.getElementById('chk-powerups').checked = devSettings.powerupsEnabled;
+  document.getElementById('chk-spikes').checked = devSettings.spikesEnabled;
+  document.getElementById('chk-oscillate').checked = devSettings.oscillateEnabled;
+  document.getElementById('chk-shark').checked = devSettings.sharkEnabled;
+  document.getElementById('chk-infiniteLives').checked = devSettings.infiniteLives;
+  document.getElementById('chk-infiniteKeys').checked = devSettings.infiniteKeys;
+  document.getElementById('chk-hitboxes').checked = devSettings.showHitboxes;
+  document.getElementById('chk-unlockAllChapters').checked = devSettings.unlockAllChapters;
+}
+
+function updatePillarPreviewBox(styleKey) {
+  const box = document.getElementById('pillarPreviewBox');
+  if (styleKey === 'procedural' || !PILLAR_SVG_DATA[styleKey]) {
+    box.innerHTML = `<span style="font-size:11px; color:#a0aec0;">Standard Procedural Pillar</span>`;
+  } else {
+    box.innerHTML = PILLAR_SVG_DATA[styleKey].bottom;
+  }
+}
+
+function adjustDevVal(key, delta) {
+  if (typeof devSettings[key] === 'number') {
+    devSettings[key] = parseFloat((devSettings[key] + delta).toFixed(2));
+  }
+  updateDevUIDisplays();
+}
+
+document.querySelectorAll('.screen-overlay, .modal-card').forEach(el => {
+  el.addEventListener('pointerdown', e => e.stopPropagation());
+  el.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+});
+
+document.getElementById('btnOpenInfoScreen').addEventListener('click', () => {
+  renderDailyMissionsUI();
+  showScreen('infoScreen');
+});
+document.getElementById('btnInfoBack').addEventListener('click', () => showScreen('mainMenuScreen'));
+
+document.querySelectorAll('.info-tab').forEach(tab => {
+  tab.addEventListener('click', (e) => {
+    document.querySelectorAll('.info-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.info-tab-content').forEach(c => c.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById(e.target.dataset.infotab).classList.add('active');
+  });
+});
+
+document.getElementById('btnPlayArcade').addEventListener('click', () => {
+  document.getElementById('arcadeDiffModal').classList.add('active');
+});
+
+document.querySelectorAll('.btn-diff-option').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const chosenDiff = e.target.getAttribute('data-diff');
+    document.getElementById('arcadeDiffModal').classList.remove('active');
+    resetGame(0, false, chosenDiff);
+  });
+});
+
+document.getElementById('btnCancelArcadeDiff').addEventListener('click', () => {
+  document.getElementById('arcadeDiffModal').classList.remove('active');
+});
+
+document.getElementById('btnPauseGame').addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (currentState === STATE.PLAYING) {
+    currentState = STATE.PAUSED;
+    document.getElementById('pauseModeInfo').textContent = storyModeActive 
+      ? `Story Mode - Chapter ${currentMilestoneIdx + 1}`
+      : `Arcade Mode - ${getCurrentArcadeDiffName()}`;
+    document.getElementById('pauseModal').classList.add('active');
+  }
+});
+
+document.getElementById('btnResumeGame').addEventListener('click', () => {
+  document.getElementById('pauseModal').classList.remove('active');
+  currentState = STATE.PLAYING;
+});
+
+document.getElementById('btnQuitGame').addEventListener('click', () => {
+  document.getElementById('pauseModal').classList.remove('active');
+  showScreen('mainMenuScreen');
+});
+
+document.getElementById('btnUseResurrectKey').addEventListener('click', executeResurrection);
+
+document.getElementById('btnStoryMode').addEventListener('click', () => {
+  renderStoryChapters();
+  showScreen('storyModeScreen');
+});
+document.getElementById('btnStoryBack').addEventListener('click', () => showScreen('mainMenuScreen'));
+
+document.getElementById('btnShopMode').addEventListener('click', () => {
+  renderShopGrid();
+  showScreen('shopModeScreen');
+});
+document.getElementById('btnShopBack').addEventListener('click', () => showScreen('mainMenuScreen'));
+
+document.getElementById('btnDevMode').addEventListener('click', () => {
+  if (localStorage.getItem('clownfish_dev_remember') === 'true') {
+    updateDevUIDisplays();
+    showScreen('devPanelScreen');
+  } else {
+    showScreen('devAuthScreen');
+  }
+});
+document.getElementById('btnDevAuthBack').addEventListener('click', () => showScreen('mainMenuScreen'));
+
+document.getElementById('btnDevUnlock').addEventListener('click', () => {
+  const inputPass = document.getElementById('devPassInput').value.trim().toLowerCase();
+  const rememberChecked = document.getElementById('chkRememberDev').checked;
+
+  if (inputPass === '0000') {
+    document.getElementById('devPassInput').value = '';
+    if (rememberChecked) {
+      localStorage.setItem('clownfish_dev_remember', 'true');
+    }
+    updateDevUIDisplays();
+    showScreen('devPanelScreen');
+  } else {
+    alert('Incorrect developer password!');
+  }
+});
+
+document.getElementById('btnDevSignOut').addEventListener('click', () => {
+  localStorage.setItem('clownfish_dev_remember', 'false');
+  showScreen('mainMenuScreen');
+  alert('Signed out of Developer Mode.');
+});
+
+document.getElementById('btnDevPanelBack').addEventListener('click', () => showScreen('mainMenuScreen'));
+
+document.querySelectorAll('.dev-tab').forEach(tab => {
+  tab.addEventListener('click', (e) => {
+    document.querySelectorAll('.dev-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.dev-tab-content').forEach(c => c.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById(e.target.dataset.tab).classList.add('active');
+  });
+});
+
+document.getElementById('selPillarTexture').addEventListener('change', (e) => {
+  updatePillarPreviewBox(e.target.value);
+});
+
+document.getElementById('btnApplyPillarTexture').addEventListener('click', () => {
+  activePillarStyle = document.getElementById('selPillarTexture').value;
+  localStorage.setItem('clownfish_pillar_style', activePillarStyle);
+  alert(`Pillar style "${activePillarStyle}" applied successfully!`);
+});
+
+document.getElementById('btnRevertPillarTexture').addEventListener('click', () => {
+  activePillarStyle = 'procedural';
+  localStorage.setItem('clownfish_pillar_style', 'procedural');
+  updateDevUIDisplays();
+  alert('Reverted to original procedural pillars!');
+});
+
+document.getElementById('chk-lockArcadeReef').addEventListener('change', e => devSettings.lockArcadeReef = e.target.checked);
+document.getElementById('chk-arcadeProgression').addEventListener('change', e => devSettings.arcadeProgressionEnabled = e.target.checked);
+document.getElementById('chk-powerups').addEventListener('change', e => devSettings.powerupsEnabled = e.target.checked);
+document.getElementById('chk-spikes').addEventListener('change', e => devSettings.spikesEnabled = e.target.checked);
+document.getElementById('chk-oscillate').addEventListener('change', e => devSettings.oscillateEnabled = e.target.checked);
+document.getElementById('chk-shark').addEventListener('change', e => devSettings.sharkEnabled = e.target.checked);
+document.getElementById('chk-infiniteLives').addEventListener('change', e => devSettings.infiniteLives = e.target.checked);
+document.getElementById('chk-infiniteKeys').addEventListener('change', e => devSettings.infiniteKeys = e.target.checked);
+document.getElementById('chk-hitboxes').addEventListener('change', e => devSettings.showHitboxes = e.target.checked);
+document.getElementById('chk-unlockAllChapters').addEventListener('change', e => {
+  devSettings.unlockAllChapters = e.target.checked;
+  renderStoryChapters();
+});
+
+document.getElementById('btnActionUnlockAll').addEventListener('click', () => {
+  devSettings.unlockAllChapters = true;
+  updateDevUIDisplays();
+  renderStoryChapters();
+  alert("All story chapters unlocked!");
+});
+document.getElementById('btnActionEasy').addEventListener('click', () => {
+  devSettings.gapMult = 1.4;
+  devSettings.speedMult = 0.7;
+  updateDevUIDisplays();
+});
+document.getElementById('btnActionNightmare').addEventListener('click', () => {
+  devSettings.gapMult = 0.75;
+  devSettings.speedMult = 1.5;
+  updateDevUIDisplays();
+});
+document.getElementById('btnActionResetDefault').addEventListener('click', resetDevDefaults);
+
+document.getElementById('btnFullStatisticalReset').addEventListener('click', () => {
+  const confirmFirst = confirm("⚠️ FULL STATISTICAL RESET\n\nThis action will completely wipe all progress including:\n- High Scores & Total Coins\n- Unlocked Fish Species\n- Story Chapter Progress\n- Daily Mission Progress\n- Developer Session Tokens\n\nAre you sure you want to perform a total reset?");
+  
+  if (confirmFirst) {
+    localStorage.clear();
+    highScore = 0;
+    totalCoins = 150;
+    unlockedStoryChapters = 1;
+    equippedFishId = 'nemo';
+    unlockedFishIds = ['nemo'];
+    dailyMissionState = {};
+    resetDevDefaults();
+    updateHUD();
+    renderDailyMissionsUI();
+    showScreen('mainMenuScreen');
+    alert("Game has been fully reset to fresh factory defaults!");
+  }
+});
+
+function resetDevDefaults() {
+  devSettings.normalGravity = 0.38;
+  devSettings.lowGravity = 0.18;
+  devSettings.jumpStrength = -6.4;
+  devSettings.startingLives = 3;
+  devSettings.speedMult = 1.0;
+  devSettings.gapMult = 1.0;
+  devSettings.spawnMult = 1.0;
+  devSettings.powerupsEnabled = true;
+  devSettings.spikesEnabled = true;
+  devSettings.oscillateEnabled = true;
+  devSettings.sharkEnabled = true;
+  devSettings.shieldDur = 360;
+  devSettings.magnetDur = 300;
+  devSettings.doubleDur = 300;
+  devSettings.unstoppableDur = 300;
+  devSettings.infiniteLives = false;
+  devSettings.infiniteKeys = false;
+  devSettings.showHitboxes = false;
+  devSettings.unlockAllChapters = false;
+  devSettings.lockArcadeReef = true;
+  devSettings.arcadeProgressionEnabled = true;
+  devSettings.defaultArcadeKeys = 1;
+  activePillarStyle = 'procedural';
+  localStorage.setItem('clownfish_pillar_style', 'procedural');
+  updateDevUIDisplays();
+  renderStoryChapters();
+}
+
+document.getElementById('btnPlayAgain').addEventListener('click', () => resetGame(currentMilestoneIdx, storyModeActive, currentArcadeDiff));
+document.getElementById('btnGameOverMainMenu').addEventListener('click', () => {
+  document.getElementById('gameOverModal').classList.remove('active');
+  showScreen('mainMenuScreen');
+});
+
+const captureLayer = document.getElementById('tap-capture');
+captureLayer.addEventListener('touchstart', handleInput, { passive: false });
+captureLayer.addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse') handleInput(e);
+});
+
+window.addEventListener('keydown', (e) => { 
+  if (e.code === 'Space' || e.code === 'ArrowUp') handleInput(e); 
+});
+
+updateHUD();
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
